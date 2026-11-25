@@ -73,27 +73,32 @@ class CatalogService:
         await self.repo.lock_stats(user_id)
 
         today = g.local_today()
-        is_correct = {"correct": True, "incorrect": False, "self_check": None}[result.outcome]
-        # 記述式を空欄のまま解答例だけ見た場合は「未解決」として記録し、XP は付与しない
-        gave_up = result.outcome == "self_check" and not answer.get("text", "").strip()
-        if gave_up:
-            is_correct = False
-        await self.repo.create_question_attempt(
-            user_id=user_id,
-            question_id=question.id,
-            course_id=course.id,
-            is_correct=is_correct,
-            answer=answer,
-            content_version=self.catalog.version,
-            activity_date=today,
-            time_spent_seconds=req.time_spent_seconds,
+        # 記述式を空欄のまま解答例だけ見た場合は「回答」として記録せず、XP も付与しない
+        # (解決済み扱い・クエスト進捗の水増しを防ぐ)
+        peek_only = result.outcome == "self_check" and not answer.get("text", "").strip()
+        # この回答より前に正解が表示済みか (表示後の初回正解は満額にしない)
+        was_revealed = (
+            await self.repo.count_incorrect(user_id, question.id) >= REVEAL_AFTER_INCORRECT
         )
+        if not peek_only:
+            await self.repo.create_question_attempt(
+                user_id=user_id,
+                question_id=question.id,
+                course_id=course.id,
+                is_correct={"correct": True, "incorrect": False, "self_check": None}[
+                    result.outcome
+                ],
+                answer=answer,
+                content_version=self.catalog.version,
+                activity_date=today,
+                time_spent_seconds=req.time_spent_seconds,
+            )
 
         summary = await self.gamification.begin_summary(user_id)
         if result.outcome == "correct":
             first = await self.gamification.award(
                 user_id,
-                amount=g.FIRST_CORRECT_XP[question.difficulty],
+                amount=g.REVIEW_XP if was_revealed else g.FIRST_CORRECT_XP[question.difficulty],
                 reason="question",
                 key=g.first_correct_key(question.id),
                 today=today,
@@ -108,7 +113,7 @@ class CatalogService:
                     today=today,
                     summary=summary,
                 )
-        elif result.outcome == "self_check" and not gave_up:
+        elif result.outcome == "self_check" and not peek_only:
             await self.gamification.award(
                 user_id,
                 amount=g.SELF_CHECK_XP,
@@ -123,6 +128,9 @@ class CatalogService:
             await self.repo.count_incorrect(user_id, question.id) >= REVEAL_AFTER_INCORRECT
         )
         stats = await self.gamification.get_stats(user_id, today)
+        # レスポンス送信前に確定させる (get_db の yield 後の commit はレスポンス送信後に
+        # 実行され得るため、commit 失敗時に「付与済み」と表示してしまうのを防ぐ)
+        await self.repo.db.commit()
         return AnswerResponse(
             question_id=question.id,
             result=result.outcome,

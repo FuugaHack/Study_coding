@@ -88,6 +88,11 @@ async def test_incorrect_answer_hides_solution_until_second_miss(auth_client: As
     assert second["correct_answer"] == "<h1>"
     assert second["explanation"]
 
+    # 正解を見た後の初回正解は満額にしない (復習扱い)
+    after = await _answer(auth_client, "q-html-heading")
+    assert after["result"] == "correct"
+    assert after["reward"]["xp_gained"] == g.REVIEW_XP
+
 
 async def test_code_answer_reports_blank_results(auth_client: AsyncClient) -> None:
     res = await _answer(auth_client, "q-js-async-await", {"blanks": ["async", "wait"]})
@@ -103,6 +108,11 @@ async def test_text_self_check(auth_client: AsyncClient) -> None:
     peek = await _answer(auth_client, qid, {"text": "  "})
     assert peek["result"] == "self_check" and peek["correct_answer"]
     assert peek["reward"]["xp_gained"] == 0
+    # 覗き見は回答として記録しない (クエスト「挑戦」にも数えない)
+    quest = next(q for q in peek["stats"]["daily_quests"] if q["id"] == "daily_attempt_5")
+    assert quest["progress"] == 0
+    detail = (await auth_client.get(f"{API}/catalog/courses/course-html-css")).json()
+    assert next(q for q in detail["questions"] if q["id"] == qid)["solved"] is False
 
     answered = await _answer(auth_client, qid, {"text": "自分なりの説明"})
     assert answered["reward"]["xp_gained"] == g.SELF_CHECK_XP

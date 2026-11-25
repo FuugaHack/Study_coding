@@ -112,7 +112,8 @@ function useAnswer(questionId: string) {
       }),
     onSuccess: (res) => {
       qc.setQueryData(queryKeys.gamification, res.stats);
-      void qc.invalidateQueries({ queryKey: queryKeys.catalog });
+      // 一覧 (["catalog","courses"]) と詳細 (["catalog","course",id]) の両方を無効化
+      void qc.invalidateQueries({ queryKey: ["catalog"] });
       pushReward(res.reward);
     },
   });
