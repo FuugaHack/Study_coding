@@ -6,3 +6,5 @@ export * from "./ai-review";
 export * from "./history";
 export * from "./recommendation";
 export * from "./common";
+export * from "./catalog";
+export * from "./gamification";

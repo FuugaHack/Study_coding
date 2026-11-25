@@ -60,7 +60,30 @@ docker compose run --rm backend python -m scripts.seed
 ログイン画面を経由せず `/auth/guest` を自動で叩いて新しいゲストユーザでサービスに入ります。
 ログイン機能を実際に確認したくなったら `false` にしてください。
 
+## テスト
+
+```bash
+# backend (docker compose の db を使用。learning_platform_test DB を自動作成)
+docker compose exec backend pytest
+
+# frontend
+npm run typecheck --workspace apps/frontend
+npm run build --workspace apps/frontend
+```
+
+CI (`.github/workflows/ci.yml`) でも同じものが PR ごとに実行されます。
+
+## 設計ドキュメント
+
+- [docs/expansion/01-current-state.md](docs/expansion/01-current-state.md) — 既存調査・差分・技術的負債
+- [docs/expansion/02-requirements-and-architecture.md](docs/expansion/02-requirements-and-architecture.md) — 要件定義・技術選定
+- [docs/expansion/03-roadmap.md](docs/expansion/03-roadmap.md) — ロードマップ
+- [docs/expansion/m1-design.md](docs/expansion/m1-design.md) — M1 詳細設計 (学習エンジン + ゲーミフィケーション)
+
+学習コンテンツ (カタログ) は `apps/backend/app/content/catalog.json` で管理しています。
+問題を追加・修正したら `docker compose exec backend pytest tests/test_domain.py` で検証してください。
+
 ## 環境変数
 
 - `apps/frontend/.env` — `VITE_API_BASE_URL`
-- `apps/backend/.env`  — `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, AWS 関連
+- `apps/backend/.env`  — `APP_TIMEZONE` (既定 Asia/Tokyo), `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, AWS 関連

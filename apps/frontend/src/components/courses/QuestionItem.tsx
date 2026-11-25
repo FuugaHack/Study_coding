@@ -1,5 +1,11 @@
-import { useMemo, useState } from "react";
+import { useRef, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
+import type { AnswerRequest, AnswerResponse } from "@learning-platform/shared-types";
+import { answerQuestion } from "@/api/catalog";
+import { getErrorMessage } from "@/lib/api";
+import { queryKeys } from "@/lib/queryKeys";
+import { useRewardStore } from "@/stores/rewards";
 import type { Question, QuestionType } from "@/types/catalog";
 
 type Props = {
@@ -60,6 +66,9 @@ export function QuestionItem({ index, total, question, onAdvance }: Props) {
             >
               難易度: {DIFFICULTY_LABEL[question.difficulty]}
             </span>
+            {question.solved && (
+              <span className="text-[11px] font-medium text-emerald-600">✓ 正解済み</span>
+            )}
             <span className="text-[11px] text-slate-500">
               {index + 1} / {total}
             </span>
@@ -88,28 +97,65 @@ function renderBody(question: Question, onAdvance: () => void) {
   }
 }
 
-function Feedback({
-  correct,
-  explanation,
-}: {
-  correct: boolean | null;
-  explanation?: string;
-}) {
-  if (correct === null) return null;
+// -------- 回答送信 (採点はサーバー) --------
+
+function useAnswer(questionId: string) {
+  const qc = useQueryClient();
+  const pushReward = useRewardStore((s) => s.push);
+  const startedAt = useRef(Date.now());
+
+  return useMutation({
+    mutationFn: (body: AnswerRequest) =>
+      answerQuestion(questionId, {
+        ...body,
+        time_spent_seconds: Math.round((Date.now() - startedAt.current) / 1000),
+      }),
+    onSuccess: (res) => {
+      qc.setQueryData(queryKeys.gamification, res.stats);
+      void qc.invalidateQueries({ queryKey: queryKeys.catalog });
+      pushReward(res.reward);
+    },
+  });
+}
+
+function asList(value: string | string[] | null | undefined): string[] {
+  if (value == null) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+function Feedback({ result, error }: { result: AnswerResponse | undefined; error: unknown }) {
+  if (error) {
+    return (
+      <div role="alert" className="mt-3 rounded-lg bg-rose-50 p-3 text-sm text-rose-800">
+        {getErrorMessage(error)}
+      </div>
+    );
+  }
+  if (!result || result.result === "self_check") return null;
+  const correct = result.result === "correct";
   return (
     <div
       role="status"
       className={clsx(
-        "mt-3 rounded-lg p-3 text-sm",
+        "mt-3 rounded-lg p-3 text-sm motion-safe:animate-pop",
         correct
           ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200"
           : "bg-rose-50 text-rose-800 ring-1 ring-rose-200",
       )}
     >
       <div className="font-semibold">
-        {correct ? "正解 🎉" : "不正解 — もう一度挑戦してみましょう"}
+        {correct
+          ? "正解 🎉"
+          : result.correct_answer == null
+            ? "惜しい! もう一度考えてみよう 💪"
+            : "不正解 — 正解と解説を確認しよう"}
       </div>
-      {explanation && <div className="mt-1 text-slate-700">{explanation}</div>}
+      {!correct && result.correct_answer != null && (
+        <div className="mt-1 text-slate-700">
+          正解: <code className="font-mono">{asList(result.correct_answer).join(" / ")}</code>
+        </div>
+      )}
+      {result.explanation && <div className="mt-1 text-slate-700">{result.explanation}</div>}
     </div>
   );
 }
@@ -160,42 +206,63 @@ function AdvanceButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-// -------- choice (single) --------
-function ChoiceBody({
-  question,
+function Actions({
+  result,
+  pending,
+  canSubmit,
+  onSubmit,
+  onRetry,
   onAdvance,
 }: {
-  question: Question;
+  result: AnswerResponse | undefined;
+  pending: boolean;
+  canSubmit: boolean;
+  onSubmit: () => void;
+  onRetry: () => void;
   onAdvance: () => void;
 }) {
-  const choices = question.choices ?? [];
-  const expected = typeof question.answer === "string" ? question.answer : question.answer[0] ?? "";
-  const [selected, setSelected] = useState<string | null>(null);
-  const [correct, setCorrect] = useState<boolean | null>(null);
+  return (
+    <div className="mt-3 flex gap-2">
+      {!result && (
+        <PrimaryButton
+          onClick={onSubmit}
+          disabled={!canSubmit || pending}
+          label={pending ? "採点中…" : "回答する"}
+        />
+      )}
+      {result?.result === "incorrect" && (
+        <>
+          <GhostButton onClick={onRetry} label="もう一度" />
+          <AdvanceButton onClick={onAdvance} />
+        </>
+      )}
+      {result && result.result !== "incorrect" && <AdvanceButton onClick={onAdvance} />}
+    </div>
+  );
+}
 
-  const handleSubmit = () => {
-    if (selected === null) return;
-    setCorrect(selected === expected);
-  };
-  const handleRetry = () => {
-    setSelected(null);
-    setCorrect(null);
-  };
+// -------- choice (single) --------
+function ChoiceBody({ question, onAdvance }: { question: Question; onAdvance: () => void }) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const answer = useAnswer(question.id);
+  const result = answer.data;
+  const revealed = asList(result?.correct_answer);
 
   return (
     <div>
       <div role="radiogroup" className="space-y-2">
-        {choices.map((label) => {
+        {question.choices.map((label) => {
           const checked = selected === label;
-          const isCorrect = correct !== null && label === expected;
-          const isWrong = correct === false && checked;
+          const isCorrect =
+            (result?.result === "correct" && checked) || revealed.includes(label);
+          const isWrong = result?.result === "incorrect" && checked;
           return (
             <label
               key={label}
               className={clsx(
                 "flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm transition",
                 "border-slate-200 hover:bg-slate-50",
-                checked && correct === null && "border-brand-400 bg-brand-50",
+                checked && !result && "border-brand-400 bg-brand-50",
                 isCorrect && "border-emerald-400 bg-emerald-50",
                 isWrong && "border-rose-400 bg-rose-50",
               )}
@@ -205,7 +272,7 @@ function ChoiceBody({
                 name={question.id}
                 checked={checked}
                 onChange={() => setSelected(label)}
-                disabled={correct !== null}
+                disabled={!!result || answer.isPending}
                 className="mt-0.5"
               />
               <span className="flex-1 whitespace-pre-wrap">{label}</span>
@@ -213,19 +280,18 @@ function ChoiceBody({
           );
         })}
       </div>
-      <div className="mt-3 flex gap-2">
-        {correct === null && (
-          <PrimaryButton onClick={handleSubmit} disabled={selected === null} label="回答する" />
-        )}
-        {correct === false && (
-          <>
-            <GhostButton onClick={handleRetry} label="もう一度" />
-            <AdvanceButton onClick={onAdvance} />
-          </>
-        )}
-        {correct === true && <AdvanceButton onClick={onAdvance} />}
-      </div>
-      <Feedback correct={correct} explanation={question.explanation} />
+      <Actions
+        result={result}
+        pending={answer.isPending}
+        canSubmit={selected !== null}
+        onSubmit={() => selected !== null && answer.mutate({ selected })}
+        onRetry={() => {
+          setSelected(null);
+          answer.reset();
+        }}
+        onAdvance={onAdvance}
+      />
+      <Feedback result={result} error={answer.error} />
     </div>
   );
 }
@@ -238,15 +304,10 @@ function MultipleChoiceBody({
   question: Question;
   onAdvance: () => void;
 }) {
-  const choices = question.choices ?? [];
-  const expectedList = useMemo(
-    () => (Array.isArray(question.answer) ? question.answer : [question.answer]),
-    [question.answer],
-  );
-  const expectedSet = useMemo(() => new Set(expectedList), [expectedList]);
-
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
-  const [correct, setCorrect] = useState<boolean | null>(null);
+  const answer = useAnswer(question.id);
+  const result = answer.data;
+  const revealed = new Set(asList(result?.correct_answer));
 
   const toggle = (label: string) => {
     setSelected((prev) => {
@@ -256,31 +317,21 @@ function MultipleChoiceBody({
       return next;
     });
   };
-  const handleSubmit = () => {
-    const same =
-      selected.size === expectedSet.size && [...selected].every((s) => expectedSet.has(s));
-    setCorrect(same);
-  };
-  const handleRetry = () => {
-    setSelected(new Set());
-    setCorrect(null);
-  };
 
   return (
     <div>
       <div className="space-y-2">
-        {choices.map((label) => {
+        {question.choices.map((label) => {
           const checked = selected.has(label);
-          const isCorrectOpt = expectedSet.has(label);
-          const showCorrect = correct !== null && isCorrectOpt;
-          const showWrong = correct !== null && checked && !isCorrectOpt;
+          const showCorrect = revealed.has(label);
+          const showWrong = result?.result === "incorrect" && revealed.size > 0 && checked && !showCorrect;
           return (
             <label
               key={label}
               className={clsx(
                 "flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm transition",
                 "border-slate-200 hover:bg-slate-50",
-                checked && correct === null && "border-brand-400 bg-brand-50",
+                checked && !result && "border-brand-400 bg-brand-50",
                 showCorrect && "border-emerald-400 bg-emerald-50",
                 showWrong && "border-rose-400 bg-rose-50",
               )}
@@ -289,7 +340,7 @@ function MultipleChoiceBody({
                 type="checkbox"
                 checked={checked}
                 onChange={() => toggle(label)}
-                disabled={correct !== null}
+                disabled={!!result || answer.isPending}
                 className="mt-0.5"
               />
               <span className="flex-1 whitespace-pre-wrap">{label}</span>
@@ -297,28 +348,27 @@ function MultipleChoiceBody({
           );
         })}
       </div>
-      <div className="mt-3 flex gap-2">
-        {correct === null && (
-          <PrimaryButton onClick={handleSubmit} disabled={selected.size === 0} label="回答する" />
-        )}
-        {correct === false && (
-          <>
-            <GhostButton onClick={handleRetry} label="もう一度" />
-            <AdvanceButton onClick={onAdvance} />
-          </>
-        )}
-        {correct === true && <AdvanceButton onClick={onAdvance} />}
-      </div>
-      <Feedback correct={correct} explanation={question.explanation} />
+      <Actions
+        result={result}
+        pending={answer.isPending}
+        canSubmit={selected.size > 0}
+        onSubmit={() => answer.mutate({ selected: [...selected] })}
+        onRetry={() => {
+          setSelected(new Set());
+          answer.reset();
+        }}
+        onAdvance={onAdvance}
+      />
+      <Feedback result={result} error={answer.error} />
     </div>
   );
 }
 
-// -------- text --------
+// -------- text (自己チェック) --------
 function TextBody({ question, onAdvance }: { question: Question; onAdvance: () => void }) {
-  const sample = Array.isArray(question.answer) ? question.answer.join("\n") : question.answer;
   const [value, setValue] = useState("");
-  const [revealed, setRevealed] = useState(false);
+  const answer = useAnswer(question.id);
+  const result = answer.data;
 
   return (
     <div>
@@ -326,59 +376,56 @@ function TextBody({ question, onAdvance }: { question: Question; onAdvance: () =
         value={value}
         onChange={(e) => setValue(e.target.value)}
         rows={3}
+        maxLength={5000}
+        disabled={!!result}
         placeholder="自分の言葉で答えてみましょう"
         className="w-full rounded-lg border border-slate-200 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
       <div className="mt-3 flex gap-2">
-        {!revealed ? (
-          <PrimaryButton onClick={() => setRevealed(true)} label="解答例を見る" />
+        {!result ? (
+          <PrimaryButton
+            onClick={() => answer.mutate({ text: value })}
+            disabled={answer.isPending}
+            label={value.trim() ? "回答して解答例を見る" : "解答例を見る"}
+          />
         ) : (
           <AdvanceButton onClick={onAdvance} />
         )}
       </div>
-      {revealed && (
-        <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm ring-1 ring-slate-200">
-          <div className="text-xs font-semibold text-slate-500">解答例</div>
-          <p className="mt-1 whitespace-pre-wrap text-slate-800">{sample}</p>
-          {question.explanation && (
-            <p className="mt-2 text-xs text-slate-600">{question.explanation}</p>
+      {result && (
+        <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm ring-1 ring-slate-200 motion-safe:animate-pop">
+          <div className="text-xs font-semibold text-slate-500">
+            解答例 — 自分の答えと比べてみよう
+          </div>
+          <p className="mt-1 whitespace-pre-wrap text-slate-800">
+            {asList(result.correct_answer).join("\n")}
+          </p>
+          {result.explanation && (
+            <p className="mt-2 text-xs text-slate-600">{result.explanation}</p>
           )}
         </div>
       )}
+      <Feedback result={undefined} error={answer.error} />
     </div>
   );
 }
 
 // -------- code (blank fill) --------
 function CodeBody({ question, onAdvance }: { question: Question; onAdvance: () => void }) {
-  const template = question.codeTemplate ?? "";
-  const expectedAnswers = useMemo(
-    () => (Array.isArray(question.answer) ? question.answer : [question.answer]),
-    [question.answer],
-  );
-  const blankCount = expectedAnswers.length;
-
+  const blankCount = Math.max(1, question.blankCount);
   const [values, setValues] = useState<string[]>(() => Array(blankCount).fill(""));
-  const [correct, setCorrect] = useState<boolean | null>(null);
-
-  const handleSubmit = () => {
-    const allCorrect = expectedAnswers.every((a, i) => (values[i] ?? "").trim() === a);
-    setCorrect(allCorrect);
-  };
-  const handleRetry = () => {
-    setValues(Array(blankCount).fill(""));
-    setCorrect(null);
-  };
+  const answer = useAnswer(question.id);
+  const result = answer.data;
+  const expected = asList(result?.correct_answer);
 
   return (
     <div>
       <pre className="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs leading-relaxed text-slate-100">
-        <code className="font-mono">{template}</code>
+        <code className="font-mono">{question.codeTemplate}</code>
       </pre>
       <div className="mt-3 space-y-2">
-        {expectedAnswers.map((expected, i) => {
-          const value = values[i] ?? "";
-          const isBlankCorrect = correct !== null && value.trim() === expected;
+        {values.map((value, i) => {
+          const blankOk = result?.blank_results[i];
           return (
             <div key={i} className="flex items-center gap-2 text-sm">
               <label className="w-16 text-xs text-slate-500" htmlFor={`${question.id}-blank-${i}`}>
@@ -388,6 +435,7 @@ function CodeBody({ question, onAdvance }: { question: Question; onAdvance: () =
                 id={`${question.id}-blank-${i}`}
                 type="text"
                 value={value}
+                maxLength={500}
                 onChange={(e) =>
                   setValues((prev) => {
                     const next = [...prev];
@@ -395,41 +443,37 @@ function CodeBody({ question, onAdvance }: { question: Question; onAdvance: () =
                     return next;
                   })
                 }
-                disabled={correct !== null}
+                disabled={!!result || answer.isPending}
                 placeholder="答えを入力"
                 className={clsx(
                   "flex-1 rounded-md border px-2 py-1 font-mono focus:outline-none focus:ring-2 focus:ring-brand-500",
-                  correct === null && "border-slate-200",
-                  correct !== null && isBlankCorrect && "border-emerald-400 bg-emerald-50",
-                  correct !== null && !isBlankCorrect && "border-rose-400 bg-rose-50",
+                  blankOk === undefined && "border-slate-200",
+                  blankOk === true && "border-emerald-400 bg-emerald-50",
+                  blankOk === false && "border-rose-400 bg-rose-50",
                 )}
               />
-              {correct !== null && !isBlankCorrect && (
+              {blankOk === false && expected[i] !== undefined && (
                 <span className="text-xs text-slate-500">
-                  正解: <code className="font-mono">{expected}</code>
+                  正解: <code className="font-mono">{expected[i]}</code>
                 </span>
               )}
             </div>
           );
         })}
       </div>
-      <div className="mt-3 flex gap-2">
-        {correct === null && (
-          <PrimaryButton
-            onClick={handleSubmit}
-            disabled={values.some((v) => !v.trim())}
-            label="回答する"
-          />
-        )}
-        {correct === false && (
-          <>
-            <GhostButton onClick={handleRetry} label="もう一度" />
-            <AdvanceButton onClick={onAdvance} />
-          </>
-        )}
-        {correct === true && <AdvanceButton onClick={onAdvance} />}
-      </div>
-      <Feedback correct={correct} explanation={question.explanation} />
+      <Actions
+        result={result}
+        pending={answer.isPending}
+        canSubmit={values.every((v) => v.trim())}
+        onSubmit={() => answer.mutate({ blanks: values })}
+        onRetry={() => {
+          // 正解した穴は残し、間違えた穴だけ空にする
+          setValues((prev) => prev.map((v, i) => (result?.blank_results[i] ? v : "")));
+          answer.reset();
+        }}
+        onAdvance={onAdvance}
+      />
+      <Feedback result={result} error={answer.error} />
     </div>
   );
 }

@@ -2,15 +2,19 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.content.loader import get_catalog
 from app.repositories.attempt_repository import AttemptRepository
 from app.repositories.course_repository import CourseRepository
+from app.repositories.gamification_repository import GamificationRepository
 from app.repositories.problem_repository import ProblemRepository
 from app.repositories.recommendation_repository import RecommendationRepository
 from app.repositories.user_repository import UserRepository
 from app.services.ai_review_service import AIReviewService
 from app.services.auth_service import AuthService
 from app.services.bedrock_service import BedrockService
+from app.services.catalog_service import CatalogService
 from app.services.course_service import CourseService
+from app.services.gamification_service import GamificationService
 from app.services.history_service import HistoryService
 from app.services.problem_generation_service import ProblemGenerationService
 from app.services.recommendation_service import RecommendationService
@@ -39,6 +43,10 @@ def get_recommendation_repo(db: AsyncSession = Depends(get_db)) -> Recommendatio
     return RecommendationRepository(db)
 
 
+def get_gamification_repo(db: AsyncSession = Depends(get_db)) -> GamificationRepository:
+    return GamificationRepository(db)
+
+
 # --- Services ---
 
 
@@ -50,11 +58,25 @@ def get_auth_service(user_repo: UserRepository = Depends(get_user_repo)) -> Auth
     return AuthService(user_repo)
 
 
+def get_gamification_service(
+    repo: GamificationRepository = Depends(get_gamification_repo),
+) -> GamificationService:
+    return GamificationService(repo)
+
+
+def get_catalog_service(
+    repo: GamificationRepository = Depends(get_gamification_repo),
+    gamification: GamificationService = Depends(get_gamification_service),
+) -> CatalogService:
+    return CatalogService(get_catalog(), repo, gamification)
+
+
 def get_course_service(
     course_repo: CourseRepository = Depends(get_course_repo),
     attempt_repo: AttemptRepository = Depends(get_attempt_repo),
+    gamification: GamificationService = Depends(get_gamification_service),
 ) -> CourseService:
-    return CourseService(course_repo, attempt_repo)
+    return CourseService(course_repo, attempt_repo, gamification)
 
 
 def get_problem_generation_service(

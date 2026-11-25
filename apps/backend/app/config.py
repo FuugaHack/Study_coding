@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
+    # 学習日付の境界 (ストリーク・デイリークエスト)
+    APP_TIMEZONE: str = "Asia/Tokyo"
+
     # Rate Limiting
     AI_RATE_LIMIT_PER_MINUTE: int = 10
     AI_RATE_LIMIT_PER_HOUR: int = 100

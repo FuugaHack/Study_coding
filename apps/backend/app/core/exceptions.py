@@ -19,6 +19,11 @@ class ConflictError(HTTPException):
         super().__init__(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
 
+class UnprocessableError(HTTPException):
+    def __init__(self, detail: str = "リクエストの形式が正しくありません"):
+        super().__init__(status_code=422, detail=detail)
+
+
 class RateLimitError(HTTPException):
     def __init__(self, detail: str = "リクエスト上限に達しました"):
         super().__init__(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=detail)

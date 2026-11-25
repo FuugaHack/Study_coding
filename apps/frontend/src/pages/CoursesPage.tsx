@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/LoadingState";
 import { getErrorMessage } from "@/lib/api";
-import { fetchCourseCatalog } from "@/data/catalog";
+import { queryKeys } from "@/lib/queryKeys";
+import { fetchCourseCatalog } from "@/api/catalog";
 import { CourseCard } from "@/components/courses/CourseCard";
 import {
   CourseFilters,
@@ -14,11 +15,10 @@ import {
   type CourseStats,
 } from "@/components/courses/CourseStatsHeader";
 
-const CATALOG_QUERY_KEY = ["catalog", "courses"] as const;
 
 export function CoursesPage() {
   const { data, isLoading, error } = useQuery({
-    queryKey: CATALOG_QUERY_KEY,
+    queryKey: queryKeys.catalog,
     queryFn: fetchCourseCatalog,
   });
 

@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { fetchCatalogCourse } from "@/data/catalog";
-import { EmptyState, LoadingState } from "@/components/common/LoadingState";
+import { fetchCatalogCourse } from "@/api/catalog";
+import { getErrorMessage } from "@/lib/api";
+import { queryKeys } from "@/lib/queryKeys";
+import { EmptyState, ErrorState, LoadingState } from "@/components/common/LoadingState";
 import { QuestionItem } from "@/components/courses/QuestionItem";
 import { CategoryBadge, LevelBadge, StatusBadge, TagPill } from "@/components/courses/Badges";
 import { CATEGORY_ACCENT_CLASS } from "@/components/courses/catalogStyles";
@@ -17,8 +19,8 @@ function formatHours(hours: number): string {
 
 export function CatalogCoursePage() {
   const { courseId = "" } = useParams();
-  const { data, isLoading } = useQuery({
-    queryKey: ["catalog", "course", courseId],
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.catalogCourse(courseId),
     queryFn: () => fetchCatalogCourse(courseId),
     enabled: !!courseId,
   });
@@ -26,6 +28,7 @@ export function CatalogCoursePage() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (isLoading) return <LoadingState />;
+  if (error && !isNotFound(error)) return <ErrorState message={getErrorMessage(error)} />;
   if (!data) {
     return (
       <div className="space-y-4">
@@ -39,8 +42,7 @@ export function CatalogCoursePage() {
     );
   }
 
-  const lesson = data.lessons[0];
-  const questions = lesson?.questions ?? [];
+  const questions = data.questions;
   const total = questions.length;
   const progressPct = total === 0 ? 0 : Math.round((currentIndex / total) * 100);
   const done = currentIndex >= total;
@@ -79,7 +81,7 @@ export function CatalogCoursePage() {
                 <p className="mt-1 max-w-xl text-sm text-white/90">{data.description}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
                   <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium backdrop-blur">
-                    {data.lessonCount} レッスン
+                    正解済み {data.solvedCount} / {data.questionCount}
                   </span>
                   <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium backdrop-blur">
                     {data.questionCount} 問
@@ -104,13 +106,24 @@ export function CatalogCoursePage() {
           </div>
         </header>
 
-        {lesson && (
+        {data.isLocked && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+            <div className="text-4xl" aria-hidden>
+              🔒
+            </div>
+            <p className="mt-2 text-sm text-slate-700">
+              「{data.prerequisiteTitles.join("」「")}」の 70% に正解すると解放されます。
+            </p>
+          </div>
+        )}
+
+        {!data.isLocked && (
           <section
             className="motion-safe:animate-fade-up"
             style={{ animationDelay: "150ms" }}
           >
             <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">{lesson.title}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">問題</h2>
               <span className="text-xs text-slate-500">
                 {done ? `${total} / ${total} 完了` : `進行中: ${currentIndex + 1} / ${total}`}
               </span>
@@ -190,4 +203,8 @@ function CompletionPanel({
       </div>
     </div>
   );
+}
+
+function isNotFound(err: unknown): boolean {
+  return (err as { response?: { status?: number } })?.response?.status === 404;
 }

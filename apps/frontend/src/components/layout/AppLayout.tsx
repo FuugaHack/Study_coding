@@ -1,6 +1,8 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { useAuthStore } from "@/stores/auth";
+import { GamificationBar } from "@/components/gamification/GamificationBar";
+import { RewardToaster } from "@/components/gamification/RewardToaster";
 
 type NavItem = {
   to: string;
@@ -59,7 +61,10 @@ export function AppLayout() {
               </NavLink>
             ))}
           </nav>
-          <button onClick={onLogout} className="ml-auto btn-secondary">
+          <div className="ml-auto">
+            <GamificationBar />
+          </div>
+          <button onClick={onLogout} className="btn-secondary">
             ログアウト
           </button>
         </div>
@@ -69,6 +74,7 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+      <RewardToaster />
     </div>
   );
 }

@@ -9,9 +9,10 @@ import {
 import { queryKeys } from "@/lib/queryKeys";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/LoadingState";
 import { getErrorMessage } from "@/lib/api";
-import { fetchCourseCatalog } from "@/data/catalog";
+import { fetchCourseCatalog } from "@/api/catalog";
 import { CATEGORY_ACCENT_CLASS } from "@/components/courses/catalogStyles";
 import { CategoryBadge, LevelBadge } from "@/components/courses/Badges";
+import { DailyQuests } from "@/components/gamification/DailyQuests";
 
 const TYPE_LABEL: Record<string, string> = {
   weakness: "苦手克服",
@@ -30,7 +31,7 @@ export function DashboardPage() {
     queryFn: getWeaknessProfile,
   });
   const catalog = useQuery({
-    queryKey: ["catalog", "courses"],
+    queryKey: queryKeys.catalog,
     queryFn: fetchCourseCatalog,
   });
 
@@ -57,6 +58,9 @@ export function DashboardPage() {
             今日も少しずつ前に進みましょう。
           </p>
         </header>
+
+        {/* レベル・ストリーク・今日のクエスト */}
+        <DailyQuests />
 
         {/* Quick stats */}
         <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">

@@ -1,7 +1,9 @@
 from decimal import Decimal
 
-from app.core.exceptions import ForbiddenError, NotFoundError
+from app.core.exceptions import NotFoundError
+from app.domain import gamification as g
 from app.models.progress import ProgressStatus
+from app.repositories.attempt_repository import AttemptRepository
 from app.repositories.course_repository import CourseRepository
 from app.schemas.course import CourseListResponse, CourseWithProgressResponse
 from app.schemas.lesson import (
@@ -12,13 +14,19 @@ from app.schemas.lesson import (
     SubmitLessonRequest,
     SubmitLessonResponse,
 )
-from app.repositories.attempt_repository import AttemptRepository
+from app.services.gamification_service import GamificationService
 
 
 class CourseService:
-    def __init__(self, course_repo: CourseRepository, attempt_repo: AttemptRepository):
+    def __init__(
+        self,
+        course_repo: CourseRepository,
+        attempt_repo: AttemptRepository,
+        gamification: GamificationService,
+    ):
         self.course_repo = course_repo
         self.attempt_repo = attempt_repo
+        self.gamification = gamification
 
     async def list_courses(self, user_id: str) -> CourseListResponse:
         courses = await self.course_repo.get_all_published()
@@ -158,6 +166,18 @@ class CourseService:
 
         # ストリーク記録
         await self.attempt_repo.record_streak(user_id, score)
+
+        # XP (初回正解のみ。冪等キーで二重付与しない)
+        if is_correct:
+            today = g.local_today()
+            await self.gamification.award(
+                user_id,
+                amount=g.LESSON_FIRST_CORRECT_XP,
+                reason="lesson",
+                key=g.lesson_key(lesson_id),
+                today=today,
+            )
+            await self.gamification.evaluate_daily_quests(user_id, today)
 
         return SubmitLessonResponse(
             submission_id=str(submission.id),

@@ -7,5 +7,8 @@ export const queryKeys = {
   recommendations: (type?: string | null) => ["recommendations", type ?? "all"] as const,
   weakness: ["weakness"] as const,
   practiceTask: (taskId: string) => ["practice", "task", taskId] as const,
+  catalog: ["catalog", "courses"] as const,
+  catalogCourse: (courseId: string) => ["catalog", "course", courseId] as const,
+  gamification: ["gamification", "me"] as const,
   reviewTask: (taskId: string) => ["ai", "review", taskId] as const,
 };
