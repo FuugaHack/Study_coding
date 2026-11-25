@@ -8,6 +8,7 @@ import type {
   CodingSolution,
 } from "@learning-platform/shared-types";
 import {
+  getCodeReview,
   getCodingIssue,
   requestCodeReview,
   revealCodingHint,
@@ -81,7 +82,6 @@ function EditorBody({ issue, onBack }: { issue: CodingIssueDetail; onBack: () =>
   const [execution, setExecution] = useState<ExecutionState | null>(null);
   const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [solutions, setSolutions] = useState<CodingSolution[] | null>(null);
-  const [review, setReview] = useState<CodingReviewResponse | null>(null);
 
   const run = useMutation({
     mutationFn: () => runCode(issue.id, code),
@@ -101,7 +101,6 @@ function EditorBody({ issue, onBack }: { issue: CodingIssueDetail; onBack: () =>
         totalCount: res.total_count,
       });
       setSubmissionId(res.submission_id);
-      setReview(null);
       qc.setQueryData(queryKeys.gamification, res.stats);
       pushReward(res.reward);
       void qc.invalidateQueries({ queryKey: ["coding"] });
@@ -123,10 +122,32 @@ function EditorBody({ issue, onBack }: { issue: CodingIssueDetail; onBack: () =>
     onSuccess: (res) => setSolutions(res.solutions),
   });
 
+  // AI レビューはワーカーで処理されるので、完了するまでポーリングする
+  const reviewKey = ["coding", "review", submissionId] as const;
+  const reviewQuery = useQuery({
+    queryKey: reviewKey,
+    queryFn: () => getCodeReview(submissionId!),
+    enabled: submissionId !== null,
+    refetchInterval: (q) => {
+      const status = q.state.data?.status;
+      return status === "pending" || status === "processing" ? 2000 : false;
+    },
+  });
   const aiReview = useMutation({
     mutationFn: () => requestCodeReview(submissionId!),
-    onSuccess: setReview,
+    onSuccess: (res) => qc.setQueryData<CodingReviewResponse>(reviewKey, res),
   });
+  const reviewState = reviewQuery.data;
+  const review = reviewState?.status === "completed" ? reviewState : null;
+  const reviewWaiting =
+    aiReview.isPending ||
+    reviewState?.status === "pending" ||
+    reviewState?.status === "processing";
+  const reviewError = aiReview.error
+    ? getErrorMessage(aiReview.error)
+    : reviewState?.status === "failed"
+      ? reviewState.error_message
+      : null;
 
   const recommended = solutions?.find((s) => s.is_recommended) ?? solutions?.[0] ?? null;
   const diff = useMemo(
@@ -273,8 +294,8 @@ function EditorBody({ issue, onBack }: { issue: CodingIssueDetail; onBack: () =>
         submissionId={submissionId}
         review={review}
         onRequestReview={() => aiReview.mutate()}
-        reviewPending={aiReview.isPending}
-        reviewError={aiReview.error ? getErrorMessage(aiReview.error) : null}
+        reviewPending={reviewWaiting}
+        reviewError={reviewError}
       />
     </div>
   );

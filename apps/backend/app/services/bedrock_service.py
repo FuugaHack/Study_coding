@@ -47,6 +47,33 @@ class BedrockService:
             temperature,
         )
 
+    # 再試行はワーカーが行う (呼び出しごとに使用量を記録するため、ここでは再試行しない)
+    async def invoke_full(
+        self,
+        system_prompt: str,
+        user_message: str,
+        temperature: float = 0.3,
+    ):
+        """本文とトークン使用量を返す (費用計測用)。"""
+        from app.services.llm import LLMResponse
+
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None,
+            self._invoke_raw,
+            system_prompt,
+            user_message,
+            self.max_tokens,
+            temperature,
+        )
+        usage = result.get("usage", {})
+        return LLMResponse(
+            text=result["content"][0]["text"],
+            input_tokens=int(usage.get("input_tokens", 0)),
+            output_tokens=int(usage.get("output_tokens", 0)),
+            model=self.model_id,
+        )
+
     def _invoke_sync(
         self,
         system_prompt: str,
@@ -54,6 +81,17 @@ class BedrockService:
         max_tokens: int,
         temperature: float,
     ) -> str:
+        return self._invoke_raw(system_prompt, user_message, max_tokens, temperature)["content"][0][
+            "text"
+        ]
+
+    def _invoke_raw(
+        self,
+        system_prompt: str,
+        user_message: str,
+        max_tokens: int,
+        temperature: float,
+    ) -> dict:
         body = json.dumps(
             {
                 "anthropic_version": "bedrock-2023-05-31",
@@ -71,8 +109,7 @@ class BedrockService:
                 accept="application/json",
                 body=body,
             )
-            result = json.loads(response["body"].read())
-            return result["content"][0]["text"]
+            return json.loads(response["body"].read())
 
         except ClientError as e:
             error_code = e.response["Error"]["Code"]

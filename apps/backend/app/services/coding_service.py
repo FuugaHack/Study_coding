@@ -1,13 +1,14 @@
 import uuid
 from datetime import UTC, datetime
 
-from pydantic import ValidationError
+from sqlalchemy import select
 
 from app.content.coding import CodingCatalog, CodingQuestion, CodingRepository
 from app.core.exceptions import ConflictError, NotFoundError
 from app.domain import code_review as cr
 from app.domain import gamification as g
 from app.domain.code_rules import find_forbidden_python
+from app.models.async_task import AsyncTask, TaskStatus
 from app.models.gamification import CodingSubmission
 from app.repositories.coding_repository import CodingRepository as CodingRepo
 from app.schemas.coding import (
@@ -25,10 +26,15 @@ from app.schemas.coding import (
     TestResultResponse,
     VisibleTest,
 )
+from app.services.ai_usage import check_budget
 from app.services.catalog_service import reward_response
 from app.services.gamification_service import GamificationService
-from app.services.llm import AIUnavailableError, LLMClient
+from app.services.llm import parse_json_output
 from app.services.runner_client import RunnerClient, RunResult, RunTest
+from app.worker import queue
+
+CODE_REVIEW_TASK = "code_review"
+GENERIC_REVIEW_FAILURE = "AI レビューに失敗しました。もう一度お試しください"
 
 # 初回合格の XP (難易度別)。ヒント 1 つにつき 20% 減 (最大 60% 減)
 CODING_XP = {"easy": 30, "normal": 45, "hard": 60}
@@ -52,13 +58,11 @@ class CodingService:
         repo: CodingRepo,
         gamification: GamificationService,
         runner: RunnerClient,
-        llm: LLMClient,
     ):
         self.catalog = catalog
         self.repo = repo
         self.gamification = gamification
         self.runner = runner
-        self.llm = llm
 
     # ------------------------------------------------------------------ 一覧
 
@@ -193,43 +197,58 @@ class CodingService:
 
     # ------------------------------------------------------------------ AI レビュー
 
-    async def review(self, user_id: str, submission_id: str) -> ReviewResponse:
-        submission = await self._submission(user_id, submission_id)
-        q = self._question(submission.question_id)
+    async def request_review(self, user_id: str, submission_id: str) -> ReviewResponse:
+        """AI レビューをワーカーに登録する (LLM はここでは呼ばない)。"""
+        # 同じ提出への同時リクエストで二重登録しないよう、提出の行をロックする
+        submission = await self._submission(user_id, submission_id, for_update=True)
         if submission.ai_review is None:
-            # LLM の呼び出し (数秒〜数十秒) の間は DB のロックを持たない
+            task = await self._latest_review_task(submission.id)
+            if task is None or task.status == TaskStatus.failed:
+                await check_budget(self.repo.db, user_id)
+                await queue.enqueue(
+                    self.repo.db,
+                    task_type=CODE_REVIEW_TASK,
+                    user_id=user_id,
+                    input_data={"submission_id": str(submission.id)},
+                )
             await self.repo.db.commit()
-            raw = await self.llm.complete_json(
-                cr.build_system_prompt(),
-                cr.build_user_message(
-                    title=q.title,
-                    description=q.description,
-                    language=q.language,
-                    code=submission.code,
-                    passed=submission.passed,
-                    passed_count=submission.passed_count,
-                    total_count=submission.total_count,
-                    hints_used=submission.hints_used,
-                ),
+        return await self.get_review(user_id, submission_id)
+
+    async def get_review(self, user_id: str, submission_id: str) -> ReviewResponse:
+        submission = await self._submission(user_id, submission_id)
+        base = {
+            "submission_id": str(submission.id),
+            "passed": submission.passed,
+            "aspect_labels": cr.ASPECTS,
+        }
+        if submission.ai_review is not None:
+            return ReviewResponse(
+                **base,
+                status="completed",
+                review=cr.CodeReview.model_validate(submission.ai_review),
+                reviewed_at=submission.ai_reviewed_at,
             )
-            try:
-                review = cr.CodeReview.model_validate(raw)
-            except ValidationError as e:
-                raise AIUnavailableError(
-                    "AI レビューの形式が不正でした。もう一度お試しください"
-                ) from e
-            review = cr.apply_objective_guard(review, submission.passed)
-            submission = await self._submission(user_id, submission_id, for_update=True)
-            if submission.ai_review is None:  # 同時リクエストで先に保存されていたらそちらを使う
-                submission.ai_review = review.model_dump()
-                submission.ai_reviewed_at = datetime.now(UTC)
-            await self.repo.db.commit()
+        task = await self._latest_review_task(submission.id)
+        if task is None:
+            return ReviewResponse(**base, status="not_requested")
+        if task.status == TaskStatus.completed:
+            # 完了したのに結果がない (提出が見つからなかったなど) ときは失敗として見せる
+            return ReviewResponse(**base, status="failed", error_message=GENERIC_REVIEW_FAILURE)
         return ReviewResponse(
-            submission_id=str(submission.id),
-            passed=submission.passed,
-            review=cr.CodeReview.model_validate(submission.ai_review),
-            reviewed_at=submission.ai_reviewed_at,
-            aspect_labels=cr.ASPECTS,
+            **base,
+            status=task.status.value,
+            error_message=task.error_message if task.status == TaskStatus.failed else None,
+        )
+
+    async def _latest_review_task(self, submission_id: uuid.UUID) -> AsyncTask | None:
+        return await self.repo.db.scalar(
+            select(AsyncTask)
+            .where(
+                AsyncTask.task_type == CODE_REVIEW_TASK,
+                AsyncTask.input_data["submission_id"].astext == str(submission_id),
+            )
+            .order_by(AsyncTask.created_at.desc())
+            .limit(1)
         )
 
     async def dispute(self, user_id: str, submission_id: str, reason: str) -> None:
@@ -346,3 +365,47 @@ class CodingService:
             executable=q.executable,
             status=status,
         )
+
+
+# ------------------------------------------------------------------ ワーカー
+
+
+async def run_code_review_task(ctx) -> dict:
+    """提出コードの AI レビュー (ワーカーで実行)。"""
+    from app.content.coding import get_coding_catalog
+    from app.worker.worker import PermanentTaskError
+
+    submission_id = uuid.UUID(ctx.task.input_data["submission_id"])
+    async with ctx.session_factory() as db:
+        submission = await db.get(CodingSubmission, submission_id)
+        if submission is None or submission.user_id != ctx.task.user_id:
+            raise PermanentTaskError("提出が見つかりません")
+        if submission.ai_review is not None:
+            return {"submission_id": str(submission_id)}
+        q = get_coding_catalog().get_question(submission.question_id)
+        if q is None:
+            raise PermanentTaskError("問題が見つかりません")
+        user_message = cr.build_user_message(
+            title=q.title,
+            description=q.description,
+            language=q.language,
+            code=submission.code,
+            passed=submission.passed,
+            passed_count=submission.passed_count,
+            total_count=submission.total_count,
+            hints_used=submission.hints_used,
+        )
+        passed = submission.passed
+
+    # LLM の呼び出し (数秒〜数十秒) の間は DB のロックもセッションも持たない
+    response = await ctx.complete(CODE_REVIEW_TASK, cr.build_system_prompt(), user_message, 0.2)
+    review = cr.CodeReview.model_validate(parse_json_output(response.text))
+    review = cr.apply_objective_guard(review, passed)
+
+    async with ctx.session_factory() as db:
+        submission = await db.get(CodingSubmission, submission_id, with_for_update=True)
+        if submission is not None and submission.ai_review is None:
+            submission.ai_review = review.model_dump()
+            submission.ai_reviewed_at = datetime.now(UTC)
+        await db.commit()
+    return {"submission_id": str(submission_id)}

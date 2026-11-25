@@ -3,6 +3,7 @@
 コンテンツは起動時に 1 回だけ読み込み、メモリに保持する (ADR-2)。
 ファイル内容の SHA-256 先頭 12 文字を `version` とし、回答ログに記録する。
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -33,10 +34,19 @@ class Question(BaseModel):
     code_template: str | None = None
     answer: str | list[str]
     explanation: str = ""
+    # 根拠となる公式ドキュメントなど (任意)。AI 品質レビューに渡す
+    references: list[str] = Field(default_factory=list)
 
     @property
     def answers(self) -> list[str]:
         return self.answer if isinstance(self.answer, list) else [self.answer]
+
+    def content_hash(self) -> str:
+        """問題 1 問分の内容ハッシュ。修正されたら変わり、AI レビューが「古い」とみなされる。"""
+        canonical = json.dumps(
+            self.model_dump(mode="json"), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
 
     @model_validator(mode="after")
     def _check_shape(self) -> Question:

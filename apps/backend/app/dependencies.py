@@ -20,7 +20,6 @@ from app.services.coding_service import CodingService
 from app.services.course_service import CourseService
 from app.services.gamification_service import GamificationService
 from app.services.history_service import HistoryService
-from app.services.llm import LLMClient, get_llm_client
 from app.services.problem_generation_service import ProblemGenerationService
 from app.services.recommendation_service import RecommendationService
 from app.services.runner_client import RunnerClient
@@ -93,9 +92,8 @@ def get_coding_service(
     db: AsyncSession = Depends(get_db),
     gamification: GamificationService = Depends(get_gamification_service),
     runner: RunnerClient = Depends(get_runner_client),
-    llm: LLMClient = Depends(get_llm_client),
 ) -> CodingService:
-    return CodingService(get_coding_catalog(), CodingRepository(db), gamification, runner, llm)
+    return CodingService(get_coding_catalog(), CodingRepository(db), gamification, runner)
 
 
 def get_course_service(
@@ -108,17 +106,15 @@ def get_course_service(
 
 
 def get_problem_generation_service(
-    bedrock: BedrockService = Depends(get_bedrock_service),
     problem_repo: ProblemRepository = Depends(get_problem_repo),
 ) -> ProblemGenerationService:
-    return ProblemGenerationService(bedrock, problem_repo)
+    return ProblemGenerationService(problem_repo)
 
 
 def get_ai_review_service(
-    bedrock: BedrockService = Depends(get_bedrock_service),
     problem_repo: ProblemRepository = Depends(get_problem_repo),
 ) -> AIReviewService:
-    return AIReviewService(bedrock, problem_repo)
+    return AIReviewService(problem_repo)
 
 
 def get_history_service(

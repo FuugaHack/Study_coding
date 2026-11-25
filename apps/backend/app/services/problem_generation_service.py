@@ -1,9 +1,11 @@
 import json
-import uuid
 
-from app.core.exceptions import AIServiceError, NotFoundError
 from app.repositories.problem_repository import ProblemRepository
-from app.services.bedrock_service import BedrockService
+from app.services.ai_usage import check_budget
+from app.services.llm import JSON_ONLY_SUFFIX, parse_json_output
+from app.worker import queue
+
+TASK_TYPE = "problem_generation"
 
 QUIZ_SYSTEM_PROMPT = """あなたはプログラミング教育の問題作成の専門家です。
 指定された条件に基づいて、プログラミングのクイズ問題を1問作成してください。
@@ -67,8 +69,7 @@ DIFFICULTY_GUIDANCE = {
 
 
 class ProblemGenerationService:
-    def __init__(self, bedrock: BedrockService, problem_repo: ProblemRepository):
-        self.bedrock = bedrock
+    def __init__(self, problem_repo: ProblemRepository):
         self.problem_repo = problem_repo
 
     async def enqueue_generation(
@@ -79,11 +80,12 @@ class ProblemGenerationService:
         tags: list[str],
         source_lesson_id: str | None = None,
     ) -> str:
-        task_id = str(uuid.uuid4())
-        await self.problem_repo.create_async_task(
-            task_id=task_id,
+        """問題生成をワーカーに登録し、task_id を返す (LLM はここでは呼ばない)。"""
+        await check_budget(self.problem_repo.db, user_id)
+        task = await queue.enqueue(
+            self.problem_repo.db,
+            task_type=TASK_TYPE,
             user_id=user_id,
-            task_type="problem_generation",
             input_data={
                 "problem_type": problem_type,
                 "difficulty": difficulty,
@@ -91,73 +93,9 @@ class ProblemGenerationService:
                 "source_lesson_id": source_lesson_id,
             },
         )
-
-        await self._generate_and_save(
-            task_id, user_id, problem_type, difficulty, tags, source_lesson_id
-        )
-        return task_id
-
-    async def _generate_and_save(
-        self,
-        task_id: str,
-        user_id: str,
-        problem_type: str,
-        difficulty: str,
-        tags: list[str],
-        source_lesson_id: str | None,
-    ) -> None:
-        try:
-            await self.problem_repo.update_task_status(task_id, "processing")
-
-            system_prompt = QUIZ_SYSTEM_PROMPT if problem_type == "quiz" else CODING_SYSTEM_PROMPT
-
-            tag_descriptions = [TAG_TOPICS.get(t, t) for t in tags]
-            user_message = f"""## 条件
-- 難易度: {difficulty} — {DIFFICULTY_GUIDANCE.get(difficulty, '')}
-- トピック: {', '.join(tag_descriptions) if tag_descriptions else '自由'}
-- 問題タイプ: {problem_type}
-"""
-
-            if source_lesson_id:
-                source = await self.problem_repo.get_lesson(source_lesson_id)
-                if source:
-                    user_message += (
-                        "\n以下の問題と「同じ概念を問うが、異なるシナリオ」の類題を作成してください。\n"
-                        f"\n元の問題:\n{json.dumps(source.content, ensure_ascii=False)}"
-                    )
-
-            content = await self.bedrock.invoke_json(
-                system_prompt=system_prompt,
-                user_message=user_message,
-                temperature=0.8,
-            )
-
-            if not self._validate(content, problem_type):
-                raise ValueError("生成された問題のバリデーションに失敗しました")
-
-            problem_id = await self.problem_repo.save_generated_problem(
-                user_id=user_id,
-                problem_type=problem_type,
-                difficulty=difficulty,
-                tags=content.get("tags", tags),
-                content=content,
-                source_lesson_id=source_lesson_id,
-                generation_prompt=user_message,
-                model_id=self.bedrock.model_id,
-            )
-
-            await self.problem_repo.update_task_result(
-                task_id=task_id,
-                status="completed",
-                result_data={"problem_id": problem_id},
-            )
-
-        except Exception as e:
-            await self.problem_repo.update_task_result(
-                task_id=task_id,
-                status="failed",
-                error_message=str(e),
-            )
+        # レスポンスより前にコミットする (直後のポーリングで 404 にならないように)
+        await self.problem_repo.db.commit()
+        return str(task.id)
 
     async def get_task_status(self, task_id: str, user_id: str) -> dict | None:
         task = await self.problem_repo.get_async_task(task_id, user_id)
@@ -184,25 +122,75 @@ class ProblemGenerationService:
 
         return result
 
-    def _validate(self, content: dict, problem_type: str) -> bool:
-        if problem_type == "quiz":
-            required = {"question", "choices", "correct_index", "explanation"}
-            if not required.issubset(content.keys()):
-                return False
-            if not isinstance(content["choices"], list) or len(content["choices"]) != 4:
-                return False
-            if not isinstance(content["correct_index"], int):
-                return False
-            if not 0 <= content["correct_index"] <= 3:
-                return False
-            return True
 
-        if problem_type == "coding":
-            required = {"description", "starter_code", "test_cases"}
-            if not required.issubset(content.keys()):
-                return False
-            if not isinstance(content["test_cases"], list) or len(content["test_cases"]) < 2:
-                return False
-            return True
+def validate_generated(content: dict, problem_type: str) -> bool:
+    if problem_type == "quiz":
+        required = {"question", "choices", "correct_index", "explanation"}
+        if not required.issubset(content.keys()):
+            return False
+        if not isinstance(content["choices"], list) or len(content["choices"]) != 4:
+            return False
+        if not isinstance(content["correct_index"], int):
+            return False
+        if not 0 <= content["correct_index"] <= 3:
+            return False
+        return True
 
-        return False
+    if problem_type == "coding":
+        required = {"description", "starter_code", "test_cases"}
+        if not required.issubset(content.keys()):
+            return False
+        if not isinstance(content["test_cases"], list) or len(content["test_cases"]) < 2:
+            return False
+        return True
+
+    return False
+
+
+async def run_problem_generation_task(ctx) -> dict:
+    """AI による類題生成 (ワーカーで実行)。"""
+    from app.services.llm import AIOutputError
+
+    data = ctx.task.input_data
+    problem_type = data["problem_type"]
+    difficulty = data["difficulty"]
+    tags = data.get("tags") or []
+    source_lesson_id = data.get("source_lesson_id")
+
+    system_prompt = QUIZ_SYSTEM_PROMPT if problem_type == "quiz" else CODING_SYSTEM_PROMPT
+    tag_descriptions = [TAG_TOPICS.get(t, t) for t in tags]
+    user_message = f"""## 条件
+- 難易度: {difficulty} — {DIFFICULTY_GUIDANCE.get(difficulty, "")}
+- トピック: {", ".join(tag_descriptions) if tag_descriptions else "自由"}
+- 問題タイプ: {problem_type}
+"""
+    if source_lesson_id:
+        async with ctx.session_factory() as db:
+            source = await ProblemRepository(db).get_lesson(source_lesson_id)
+            source_content = source.content if source else None
+        if source_content:
+            user_message += (
+                "\n以下の問題と「同じ概念を問うが、異なるシナリオ」の類題を作成してください。\n"
+                f"\n元の問題:\n{json.dumps(source_content, ensure_ascii=False)}"
+            )
+
+    response = await ctx.complete(
+        TASK_TYPE, system_prompt + JSON_ONLY_SUFFIX, user_message, temperature=0.8
+    )
+    content = parse_json_output(response.text)
+    if not validate_generated(content, problem_type):
+        raise AIOutputError("生成された問題のバリデーションに失敗しました")
+
+    async with ctx.session_factory() as db:
+        problem_id = await ProblemRepository(db).save_generated_problem(
+            user_id=str(ctx.task.user_id),
+            problem_type=problem_type,
+            difficulty=difficulty,
+            tags=content.get("tags", tags),
+            content=content,
+            source_lesson_id=source_lesson_id,
+            generation_prompt=user_message,
+            model_id=response.model,
+        )
+        await db.commit()
+    return {"problem_id": problem_id}

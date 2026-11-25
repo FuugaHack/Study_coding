@@ -115,10 +115,20 @@ export interface CodeReview {
   next_topics: string[];
 }
 
+/** AI レビューはワーカーで処理する。completed になるまでポーリングする */
+export type CodingReviewStatus =
+  | "not_requested"
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed";
+
 export interface CodingReviewResponse {
   submission_id: string;
+  status: CodingReviewStatus;
   passed: boolean | null;
-  review: CodeReview;
-  reviewed_at: string;
+  review: CodeReview | null;
+  reviewed_at: string | null;
+  error_message: string | null;
   aspect_labels: Record<string, string>;
 }

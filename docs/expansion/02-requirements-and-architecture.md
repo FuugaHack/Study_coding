@@ -47,6 +47,7 @@
 | ADR-6 | **モバイルは React Native + Expo** | TS/React の知識・`shared-types`・API クライアントを共有可能。EAS で両ストア配信 | Flutter (言語/型の共有不可)、ネイティブ 2 本 (工数 2 倍) |
 | ADR-7 | **ユーザーコード実行は隔離コンテナ (Judge0 互換 or 自前 Docker + gVisor)** | 任意コード実行は API プロセスから必ず分離 | API プロセス内 `exec` (論外)、ブラウザ内 (Pyodide 等) は言語が限られる → 初心者向けの補助として併用可 |
 | ADR-8 | **テストは実 PostgreSQL で実行** | モデルが PG 固有型に依存 (D8)。本番と同じ挙動 | SQLite (型非互換) |
+| ADR-9 | **AI ワーカーのキューは PostgreSQL (`async_tasks` + `FOR UPDATE SKIP LOCKED`)** | インフラを増やさない。登録が API のトランザクションと一緒にコミットされる。既存のステータス API がこの表を読んでいる | SQS / Celery / arq (規模が大きくなったら SQS へ。`app/worker/queue.py` に閉じ込めてある) |
 
 ## 5. システム構成 (目標)
 

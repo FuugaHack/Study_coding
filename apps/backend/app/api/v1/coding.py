@@ -88,14 +88,24 @@ async def submit_code(
         return await service.submit(user_id, question_id, req.code)
 
 
-@router.post("/submissions/{submission_id}/review", response_model=ReviewResponse)
-async def review_submission(
+@router.post("/submissions/{submission_id}/review", response_model=ReviewResponse, status_code=202)
+async def request_review(
     submission_id: str,
     user_id: str = Depends(get_current_user_id),
     service: CodingService = Depends(get_coding_service),
 ):
+    """AI レビューを登録する。結果は GET で取得する (ワーカーで処理)。"""
     await rate_limit_ai(user_id)
-    return await service.review(user_id, submission_id)
+    return await service.request_review(user_id, submission_id)
+
+
+@router.get("/submissions/{submission_id}/review", response_model=ReviewResponse)
+async def get_review(
+    submission_id: str,
+    user_id: str = Depends(get_current_user_id),
+    service: CodingService = Depends(get_coding_service),
+):
+    return await service.get_review(user_id, submission_id)
 
 
 @router.post("/submissions/{submission_id}/dispute", status_code=204)

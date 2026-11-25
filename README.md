@@ -84,12 +84,26 @@ CI (`.github/workflows/ci.yml`) でも同じものが PR ごとに実行され�
 - [docs/expansion/m1-design.md](docs/expansion/m1-design.md) — M1 詳細設計 (学習エンジン + ゲーミフィケーション)
 - [docs/expansion/m2-design.md](docs/expansion/m2-design.md) — M2 詳細設計 (バッジ / ステージマップ / 飛び級 / ボス戦)
 - [docs/expansion/m3-design.md](docs/expansion/m3-design.md) — M3 詳細設計 (コード実行サンドボックス / AI レビュー / 段階ヒント)
+- [docs/expansion/m4-design.md](docs/expansion/m4-design.md) — M4 詳細設計 (AI ワーカー / コスト計測と利用上限 / 問題品質レビュー / 構造化ログ)
 
 学習コンテンツは `apps/backend/app/content/catalog.json` (クイズ) と `coding.json` (コーディング問題) で管理しています。
 コーディング問題の模範解答は、`docker compose exec backend pytest tests/test_coding_content.py` で実際にランナー上で実行して検証されます。
 問題を追加・修正したら `docker compose exec backend pytest tests/test_domain.py` で検証してください。
 
+### AI 処理と問題品質レビュー
+
+AI の処理 (コードレビュー・問題生成・問題品質レビュー) は API ではなく `worker` サービス (`python -m app.worker`) が実行します。
+`docker compose up` で一緒に起動します。運用操作は CLI で行います。
+
+```bash
+docker compose exec backend python -m app.cli questions lint                  # 静的チェック (CI でも実行)
+docker compose exec backend python -m app.cli questions enqueue               # 未レビュー・要再レビューの問題を AI レビューに登録
+docker compose exec backend python -m app.cli questions report --output r.md  # レビュー結果のレポート
+docker compose exec backend python -m app.cli questions dismiss <id> --note "理由"  # AI の指摘を対応不要にする
+docker compose exec backend python -m app.cli usage --days 7                  # AI の使用量と費用
+```
+
 ## 環境変数
 
 - `apps/frontend/.env` — `VITE_API_BASE_URL`
-- `apps/backend/.env`  — `APP_TIMEZONE` (既定 Asia/Tokyo), `AI_REVIEW_ENABLED` (AWS の認証情報がない環境では false 推奨), `RUNNER_TOKEN` (本番では必ず変更), `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, AWS 関連
+- `apps/backend/.env`  — `APP_TIMEZONE` (既定 Asia/Tokyo), `AI_REVIEW_ENABLED` (AWS の認証情報がない環境では false 推奨), `RUNNER_TOKEN` (本番では必ず変更), `AI_USER_DAILY_TOKEN_LIMIT` / `AI_GLOBAL_DAILY_COST_LIMIT_USD` (AI の利用上限), `AI_PRICE_*_PER_MTOK` (費用計算の単価), `LOG_FORMAT` (json / console), `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, AWS 関連

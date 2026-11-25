@@ -114,11 +114,17 @@ class SolutionsResponse(BaseModel):
     solutions: list[SolutionResponse]
 
 
+ReviewStatus = Literal["not_requested", "pending", "processing", "completed", "failed"]
+
+
 class ReviewResponse(BaseModel):
     submission_id: str
+    # AI レビューはワーカーで処理する。completed になるまでポーリングする
+    status: ReviewStatus
     passed: bool | None
-    review: CodeReview
-    reviewed_at: datetime
+    review: CodeReview | None = None
+    reviewed_at: datetime | None = None
+    error_message: str | None = None
     aspect_labels: dict[str, str]
 
 

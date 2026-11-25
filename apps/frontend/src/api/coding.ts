@@ -63,6 +63,13 @@ export async function requestCodeReview(submissionId: string) {
   return data;
 }
 
+export async function getCodeReview(submissionId: string) {
+  const { data } = await api.get<CodingReviewResponse>(
+    `/coding/submissions/${enc(submissionId)}/review`,
+  );
+  return data;
+}
+
 export async function disputeReview(submissionId: string, reason: string) {
   await api.post(`/coding/submissions/${enc(submissionId)}/dispute`, { reason });
 }

@@ -22,7 +22,7 @@ export function AIReviewPanel({ submissionId, review, onRequest, pending, error 
       </p>
     );
   }
-  if (!review) {
+  if (!review || !review.review) {
     return (
       <div className="space-y-2 text-slate-300">
         <p>提出したコードを AI にレビューしてもらおう。</p>
@@ -32,8 +32,13 @@ export function AIReviewPanel({ submissionId, review, onRequest, pending, error 
           disabled={pending}
           className="rounded-md bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
         >
-          {pending ? "レビュー中…" : "🤖 AI レビューを受ける"}
+          {pending ? "レビュー中…" : error ? "🤖 もう一度レビューを依頼する" : "🤖 AI レビューを受ける"}
         </button>
+        {pending && (
+          <p className="text-xs text-slate-400">
+            AI がコードを読んでいます。数十秒かかることがあります (このまま待つか、他の作業を続けても大丈夫です)。
+          </p>
+        )}
         {error && (
           <p role="alert" className="text-rose-300">
             {error}

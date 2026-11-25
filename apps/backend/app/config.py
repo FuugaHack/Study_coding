@@ -37,6 +37,22 @@ class Settings(BaseSettings):
     # AI レビュー。false にすると AI 機能は 503 を返す (認証情報がない開発環境など)
     AI_REVIEW_ENABLED: bool = True
 
+    # AI ワーカー (docs/expansion/m4-design.md §3)
+    AI_WORKER_CONCURRENCY: int = 2
+    AI_WORKER_POLL_INTERVAL_S: float = 1.0
+    AI_TASK_TIMEOUT_S: int = 180
+    AI_TASK_MAX_ATTEMPTS: int = 3
+
+    # AI の費用計測と利用上限 (単価は USD / 100 万トークン)
+    AI_PRICE_INPUT_PER_MTOK: float = 3.0
+    AI_PRICE_OUTPUT_PER_MTOK: float = 15.0
+    AI_USER_DAILY_TOKEN_LIMIT: int = 200_000
+    AI_GLOBAL_DAILY_COST_LIMIT_USD: float = 10.0
+
+    # ログ: json (本番) / console (開発)
+    LOG_FORMAT: str = "json"
+    LOG_LEVEL: str = "INFO"
+
     # Rate Limiting
     AI_RATE_LIMIT_PER_MINUTE: int = 10
     AI_RATE_LIMIT_PER_HOUR: int = 100

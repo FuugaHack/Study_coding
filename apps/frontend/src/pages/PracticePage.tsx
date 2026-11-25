@@ -41,6 +41,7 @@ export function PracticePage() {
     queryFn: () => getPracticeStatus(taskId!),
     enabled: !!taskId,
     refetchInterval: (q) => {
+      if (q.state.status === "error") return false;
       const s = q.state.data?.status;
       return s === "completed" || s === "failed" ? false : 2000;
     },

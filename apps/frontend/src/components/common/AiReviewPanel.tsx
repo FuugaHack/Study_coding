@@ -8,6 +8,7 @@ export function AiReviewPanel({ taskId }: { taskId: string }) {
     queryKey: queryKeys.reviewTask(taskId),
     queryFn: () => getReviewResult(taskId),
     refetchInterval: (q) => {
+      if (q.state.status === "error") return false;
       const s = q.state.data?.status;
       return s === "completed" || s === "failed" ? false : 2000;
     },

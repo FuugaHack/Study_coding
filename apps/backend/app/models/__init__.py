@@ -1,3 +1,4 @@
+from app.models.ai_ops import AiUsage, QuestionReview
 from app.models.async_task import AsyncTask, TaskStatus
 from app.models.base import Base
 from app.models.course import Course, CourseLevel
@@ -52,4 +53,6 @@ __all__ = [
     "ChallengeSession",
     "CodingProgress",
     "CodingSubmission",
+    "AiUsage",
+    "QuestionReview",
 ]

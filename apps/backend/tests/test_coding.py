@@ -3,6 +3,7 @@
 ランナーと LLM はフェイクに差し替える。本物のランナーを使うコンテンツ検証は
 test_coding_content.py を参照。
 """
+
 import pytest
 from httpx import AsyncClient
 
@@ -10,8 +11,9 @@ from app.content.coding import get_coding_catalog
 from app.dependencies import get_runner_client
 from app.domain import code_review as cr
 from app.services.coding_service import AFTER_SOLUTION_XP, CODING_XP, coding_xp
-from app.services.llm import AIUnavailableError, get_llm_client
+from app.services.llm import AIUnavailableError
 from app.services.runner_client import RunResult
+from tests.fakes import FakeLLM, drain
 
 API = "/api/v1/coding"
 PY_QUESTION = "q-py-sum"  # easy, 公開 2 件 + 非公開 2 件
@@ -28,18 +30,6 @@ class FakeRunner:
         self.calls.append((language, code, len(tests)))
         status = "passed" if "PASS" in code else "failed"
         return [RunResult(status, "out", "", 5) for _ in tests]
-
-
-class FakeLLM:
-    def __init__(self, response: dict | Exception) -> None:
-        self.response = response
-        self.calls = 0
-
-    async def complete_json(self, system_prompt, user_message):
-        self.calls += 1
-        if isinstance(self.response, Exception):
-            raise self.response
-        return self.response
 
 
 def review_json(correctness: int = 5) -> dict:
@@ -63,16 +53,6 @@ def runner():
     app.dependency_overrides.pop(get_runner_client, None)
 
 
-@pytest.fixture
-def llm():
-    from app.main import app
-
-    holder = {"fake": FakeLLM(review_json())}
-    app.dependency_overrides[get_llm_client] = lambda: holder["fake"]
-    yield holder
-    app.dependency_overrides.pop(get_llm_client, None)
-
-
 async def _submit(client: AsyncClient, code: str, qid: str = PY_QUESTION) -> dict:
     res = await client.post(f"{API}/issues/{qid}/submit", json={"code": code})
     assert res.status_code == 200, res.text
@@ -93,9 +73,12 @@ def test_objective_guard_caps_correctness_when_tests_fail() -> None:
     review = cr.CodeReview.model_validate(review_json(correctness=5))
     guarded = cr.apply_objective_guard(review, passed=False)
     assert guarded.aspects["correctness"].score == cr.FAILED_CORRECTNESS_CAP
-    assert cr.apply_objective_guard(
-        cr.CodeReview.model_validate(review_json(5)), passed=True
-    ).aspects["correctness"].score == 5
+    assert (
+        cr.apply_objective_guard(cr.CodeReview.model_validate(review_json(5)), passed=True)
+        .aspects["correctness"]
+        .score
+        == 5
+    )
 
 
 def test_review_schema_requires_all_aspects() -> None:
@@ -225,50 +208,66 @@ async def test_unknown_issue_404(auth_client: AsyncClient) -> None:
     assert (await auth_client.get(f"{API}/repositories/nope/issues")).status_code == 404
 
 
-async def test_ai_review_is_cached_and_guarded(
-    auth_client: AsyncClient, runner: FakeRunner, llm
+async def test_ai_review_runs_in_worker_and_is_guarded(
+    auth_client: AsyncClient, runner: FakeRunner, session_factory
 ) -> None:
-    llm["fake"] = FakeLLM(review_json(correctness=5))
+    llm = FakeLLM(review_json(correctness=5))
     failed = await _submit(auth_client, "wrong")
-    res = await auth_client.post(f"{API}/submissions/{failed['submission_id']}/review")
-    assert res.status_code == 200, res.text
-    body = res.json()
+    url = f"{API}/submissions/{failed['submission_id']}/review"
+
+    assert (await auth_client.get(url)).json()["status"] == "not_requested"
+    res = await auth_client.post(url)
+    assert res.status_code == 202, res.text
+    assert res.json()["status"] == "pending" and res.json()["review"] is None
+    # 同じ提出への再リクエストで二重登録しない
+    assert (await auth_client.post(url)).status_code == 202
+
+    assert await drain(session_factory, llm) == 1
+    assert llm.calls == 1
+    body = (await auth_client.get(url)).json()
+    assert body["status"] == "completed"
     assert body["passed"] is False
     assert body["review"]["aspects"]["correctness"]["score"] == cr.FAILED_CORRECTNESS_CAP
     assert set(body["aspect_labels"]) == set(cr.ASPECTS)
 
-    again = await auth_client.post(f"{API}/submissions/{failed['submission_id']}/review")
-    assert again.status_code == 200 and llm["fake"].calls == 1  # 2 回目はキャッシュ
+    again = await auth_client.post(url)
+    assert again.json()["status"] == "completed"
+    assert await drain(session_factory, llm) == 0 and llm.calls == 1  # 2 回目はキャッシュ
 
 
-async def test_ai_review_unavailable_returns_503(
-    auth_client: AsyncClient, runner: FakeRunner, llm
+@pytest.mark.parametrize(
+    "response", [AIUnavailableError(), {"summary": "x"}, "not json"], ids=["503", "schema", "json"]
+)
+async def test_ai_review_failure_is_retried_then_failed(
+    auth_client: AsyncClient, runner: FakeRunner, session_factory, monkeypatch, response
 ) -> None:
-    llm["fake"] = FakeLLM(AIUnavailableError())
-    sub = await _submit(auth_client, "# PASS")
-    res = await auth_client.post(f"{API}/submissions/{sub['submission_id']}/review")
-    assert res.status_code == 503
+    from app.config import settings
 
-
-async def test_ai_review_rejects_malformed_output(
-    auth_client: AsyncClient, runner: FakeRunner, llm
-) -> None:
-    llm["fake"] = FakeLLM({"summary": "x"})
+    monkeypatch.setattr(settings, "AI_TASK_MAX_ATTEMPTS", 1)
     sub = await _submit(auth_client, "# PASS")
-    res = await auth_client.post(f"{API}/submissions/{sub['submission_id']}/review")
-    assert res.status_code == 503
+    url = f"{API}/submissions/{sub['submission_id']}/review"
+    await auth_client.post(url)
+    await drain(session_factory, FakeLLM(response))
+    body = (await auth_client.get(url)).json()
+    assert body["status"] == "failed"
+    # 例外の詳細ではなく固定のメッセージを返す
+    assert body["error_message"] == "AI の処理に失敗しました。時間をおいてもう一度お試しください"
+    # 失敗したら再リクエストできる
+    assert (await auth_client.post(url)).json()["status"] == "pending"
 
 
 async def test_submission_belongs_to_user(
-    auth_client: AsyncClient, client: AsyncClient, runner: FakeRunner, llm
+    auth_client: AsyncClient, client: AsyncClient, runner: FakeRunner
 ) -> None:
     sub = await _submit(auth_client, "# PASS")
     other = (await client.post("/api/v1/auth/guest")).json()["access_token"]
-    res = await client.post(
-        f"{API}/submissions/{sub['submission_id']}/review",
-        headers={"Authorization": f"Bearer {other}"},
-    )
-    assert res.status_code == 404
+    for method in ("post", "get"):
+        res = await client.request(
+            method,
+            f"{API}/submissions/{sub['submission_id']}/review",
+            headers={"Authorization": f"Bearer {other}"},
+        )
+        assert res.status_code == 404
 
 
 async def test_dispute(auth_client: AsyncClient, runner: FakeRunner, session_factory) -> None:
