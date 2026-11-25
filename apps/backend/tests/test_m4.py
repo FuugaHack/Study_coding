@@ -334,6 +334,9 @@ def test_quality_guard() -> None:
     assert qq.is_official_url("https://docs.python.org/3/library/functions.html")
     assert not qq.is_official_url("http://docs.python.org/3/")  # https のみ
     assert not qq.is_official_url("https://python.org.evil.example/")
+    # AI 系コースの根拠 (Anthropic のドキュメントは移転している)
+    assert qq.is_official_url("https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview")
+    assert qq.is_official_url("https://platform.openai.com/docs/guides/prompt-engineering")
 
 
 def test_quality_schema_requires_https_reference() -> None:

@@ -754,11 +754,15 @@
           "id": "q-tw-flex-center",
           "type": "code",
           "title": "Flexで中央寄せ",
-          "description": "Flexコンテナで子を中央に配置するクラスを完成させてください。",
-          "difficulty": "normal",
-          "code_template": "<div class=\"flex items-center ___\">...</div>",
-          "answer": "justify-center",
-          "explanation": "items-center=縦中央、justify-center=横中央(rowの場合)。"
+          "description": "items-center で縦方向は中央寄せ済みです。justify- で始まるクラスを完成させて、横方向も中央に配置してください。",
+          "difficulty": "easy",
+          "code_template": "<div class=\"flex items-center justify-___\">...</div>",
+          "answer": "center",
+          "explanation": "justify-center は主軸方向 (flex-row なら横)、items-center は交差軸方向 (flex-row なら縦) の中央寄せです。flex-col にすると縦横が入れ替わります。",
+          "references": [
+            "https://tailwindcss.com/docs/justify-content",
+            "https://tailwindcss.com/docs/align-items"
+          ]
         }
       ]
     },
@@ -1711,11 +1715,15 @@
         {
           "id": "q-prompt-clarity",
           "type": "text",
-          "title": "明確な指示",
+          "title": "良いプロンプトの基本原則",
           "description": "良いプロンプトの基本原則を1つ挙げてください。",
-          "difficulty": "normal",
-          "answer": "曖昧な表現を避け、求める出力フォーマット・制約・例を明示する。役割と前提を最初に置く。",
-          "explanation": "言わないと察してくれない。"
+          "difficulty": "easy",
+          "answer": "例: 明確かつ具体的に指示する (曖昧な表現を避け、目的・出力形式・制約を明示する)。次のいずれかを 1 つ挙げられていれば正解: 指示を明確・具体的にする / 出力形式を指定する / 入出力の例を示す (few-shot) / 役割や前提を与える / 区切り文字やタグで入力を構造化する / 複雑なタスクを段階に分ける / 段階的に考えさせる (chain of thought)。",
+          "explanation": "LLM は依頼者の暗黙の前提を共有していないため、目的・出力形式・制約を明示すると期待どおりの出力を得やすくなります。悪い例:「要約して」、良い例:「以下の記事を経営層向けに 3 行の箇条書きで要約して」。ほかの原則も、公式のプロンプトエンジニアリングガイドで解説されています。",
+          "references": [
+            "https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/be-clear-and-direct",
+            "https://platform.openai.com/docs/guides/prompt-engineering"
+          ]
         },
         {
           "id": "q-prompt-fewshot",

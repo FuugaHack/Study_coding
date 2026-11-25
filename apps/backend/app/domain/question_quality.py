@@ -182,6 +182,10 @@ OFFICIAL_DOC_DOMAINS: tuple[str, ...] = (
     "numpy.org",
     "pandas.pydata.org",
     "docs.anthropic.com",
+    # Anthropic のドキュメントの移転先
+    "docs.claude.com",
+    "platform.claude.com",
+    "platform.openai.com",
     "terraform.io",
     "hashicorp.com",
     "nginx.org",
