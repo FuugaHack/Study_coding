@@ -17,7 +17,10 @@ export const useRewardStore = create<RewardState>((set, get) => ({
   toasts: [],
   push: (reward) => {
     const nothing =
-      reward.xp_gained === 0 && reward.coins_gained === 0 && !reward.leveled_up;
+      reward.xp_gained === 0 &&
+      reward.coins_gained === 0 &&
+      !reward.leveled_up &&
+      reward.new_badges.length === 0;
     if (nothing) return;
     const id = nextId++;
     set({ toasts: [...get().toasts, { id, reward }] });

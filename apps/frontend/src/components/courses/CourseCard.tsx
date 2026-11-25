@@ -37,7 +37,8 @@ export function CourseCard({ course, index }: Props) {
         "border-slate-200 shadow-sm",
         !locked &&
           "motion-safe:hover:-translate-y-1 hover:shadow-lg hover:border-slate-300 cursor-pointer",
-        locked && "opacity-60 grayscale-[20%] cursor-not-allowed",
+        locked && "opacity-60 grayscale-[20%]",
+        locked && (course.canTakePlacement ? "cursor-pointer" : "cursor-not-allowed"),
         inProgress && !locked && "ring-1 ring-blue-200 course-card-glow",
       )}
     >
@@ -136,6 +137,15 @@ export function CourseCard({ course, index }: Props) {
         </p>
       )}
 
+      {(course.bossDefeated || course.skipped) && (
+        <div
+          aria-label={course.bossDefeated ? "ボス撃破済み" : "飛び級でクリア"}
+          className="absolute left-3 top-3 text-xl"
+        >
+          {course.bossDefeated ? "👑" : "🚀"}
+        </div>
+      )}
+
       {completed && (
         <div
           aria-hidden
@@ -151,7 +161,7 @@ export function CourseCard({ course, index }: Props) {
   const wrapperClass = "group block h-full motion-safe:animate-fade-up";
   const style = { animationDelay: `${200 + index * 60}ms` };
 
-  if (locked) {
+  if (locked && !course.canTakePlacement) {
     return (
       <div
         className={wrapperClass}
@@ -169,7 +179,12 @@ export function CourseCard({ course, index }: Props) {
   }
 
   return (
-    <Link to={`/catalog/courses/${course.id}`} className={wrapperClass} style={style}>
+    <Link
+      to={`/catalog/courses/${course.id}`}
+      className={wrapperClass}
+      style={style}
+      title={locked ? "実力テストに合格すると飛び級できます" : undefined}
+    >
       {body}
     </Link>
   );

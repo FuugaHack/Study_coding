@@ -20,6 +20,13 @@ export interface CatalogCourseSummary {
   progress: number;
   status: CatalogCourseStatus;
   is_locked: boolean;
+  /** 次のコースの解放条件を満たしたか (70% 正解 or 実力テスト合格) */
+  is_cleared: boolean;
+  /** 実力テスト合格でクリア扱いになったか */
+  skipped: boolean;
+  boss_defeated: boolean;
+  can_take_placement: boolean;
+  can_challenge_boss: boolean;
 }
 
 export interface CatalogCourseListResponse {

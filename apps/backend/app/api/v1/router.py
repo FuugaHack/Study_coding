@@ -4,6 +4,7 @@ from app.api.v1 import (
     ai_review,
     auth,
     catalog,
+    challenges,
     courses,
     gamification,
     history,
@@ -20,3 +21,4 @@ api_router.include_router(recommendations.router)
 api_router.include_router(ai_review.router)
 api_router.include_router(catalog.router)
 api_router.include_router(gamification.router)
+api_router.include_router(challenges.router)

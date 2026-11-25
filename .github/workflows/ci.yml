@@ -42,9 +42,11 @@ jobs:
         run: >-
           ruff check app/content app/domain app/models/gamification.py
           app/repositories/gamification_repository.py app/services/catalog_service.py
-          app/services/gamification_service.py app/schemas/catalog.py app/schemas/gamification.py
-          app/api/v1/catalog.py app/api/v1/gamification.py
-          app/db/migrations/versions/0002_gamification.py tests
+          app/services/gamification_service.py app/services/challenge_service.py
+          app/schemas/catalog.py app/schemas/gamification.py app/schemas/challenge.py
+          app/api/v1/catalog.py app/api/v1/gamification.py app/api/v1/challenges.py
+          app/db/migrations/versions/0002_gamification.py
+          app/db/migrations/versions/0003_gamification_m2.py tests
       - name: Migrations apply cleanly
         run: alembic upgrade head
       - name: Tests

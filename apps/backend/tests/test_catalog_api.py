@@ -212,7 +212,7 @@ async def test_streak_across_days(auth_client: AsyncClient, session_factory) -> 
         from app.models import UserStats
 
         user_id = (await session.execute(select(UserStats.user_id))).scalar_one()
-        service = GamificationService(GamificationRepository(session))
+        service = GamificationService(GamificationRepository(session), get_catalog())
         today = g.local_today()
         for offset, key in ((1, "a"), (2, "b")):
             await service.award(

@@ -13,6 +13,7 @@ from app.services.ai_review_service import AIReviewService
 from app.services.auth_service import AuthService
 from app.services.bedrock_service import BedrockService
 from app.services.catalog_service import CatalogService
+from app.services.challenge_service import ChallengeService
 from app.services.course_service import CourseService
 from app.services.gamification_service import GamificationService
 from app.services.history_service import HistoryService
@@ -61,7 +62,7 @@ def get_auth_service(user_repo: UserRepository = Depends(get_user_repo)) -> Auth
 def get_gamification_service(
     repo: GamificationRepository = Depends(get_gamification_repo),
 ) -> GamificationService:
-    return GamificationService(repo)
+    return GamificationService(repo, get_catalog())
 
 
 def get_catalog_service(
@@ -69,6 +70,14 @@ def get_catalog_service(
     gamification: GamificationService = Depends(get_gamification_service),
 ) -> CatalogService:
     return CatalogService(get_catalog(), repo, gamification)
+
+
+def get_challenge_service(
+    repo: GamificationRepository = Depends(get_gamification_repo),
+    gamification: GamificationService = Depends(get_gamification_service),
+    catalog_service: CatalogService = Depends(get_catalog_service),
+) -> ChallengeService:
+    return ChallengeService(get_catalog(), repo, gamification, catalog_service)
 
 
 def get_course_service(

@@ -8,3 +8,4 @@ export * from "./recommendation";
 export * from "./common";
 export * from "./catalog";
 export * from "./gamification";
+export * from "./challenge";

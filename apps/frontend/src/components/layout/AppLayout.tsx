@@ -14,8 +14,10 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "ダッシュボード" },
+  { to: "/map", label: "マップ" },
   { to: "/courses", label: "コース" },
   { to: "/practice", label: "コーディング", withAiBadge: true },
+  { to: "/achievements", label: "実績" },
   // 「履歴」はメニューから非表示 (ルートは保持)
 ];
 
