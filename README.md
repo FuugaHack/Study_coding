@@ -79,6 +79,7 @@ CI (`.github/workflows/ci.yml`) でも同じものが PR ごとに実行され�
 - [docs/expansion/02-requirements-and-architecture.md](docs/expansion/02-requirements-and-architecture.md) — 要件定義・技術選定
 - [docs/expansion/03-roadmap.md](docs/expansion/03-roadmap.md) — ロードマップ
 - [docs/expansion/m1-design.md](docs/expansion/m1-design.md) — M1 詳細設計 (学習エンジン + ゲーミフィケーション)
+- [docs/expansion/m2-design.md](docs/expansion/m2-design.md) — M2 詳細設計 (バッジ / ステージマップ / 飛び級 / ボス戦)
 
 学習コンテンツ (カタログ) は `apps/backend/app/content/catalog.json` で管理しています。
 問題を追加・修正したら `docker compose exec backend pytest tests/test_domain.py` で検証してください。

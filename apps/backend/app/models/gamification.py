@@ -58,6 +58,7 @@ class UserStats(Base):
     current_streak: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     longest_streak: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     last_active_date: Mapped[date | None] = mapped_column(Date)
+    streak_freezes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
@@ -81,3 +82,52 @@ class XpEvent(UUIDPrimaryKeyMixin, Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+
+class UserBadge(Base):
+    __tablename__ = "user_badges"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    badge_id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    earned_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class CourseAchievement(Base):
+    """コース単位の達成: placement_passed (飛び級でクリア扱い) / boss_defeated (👑)"""
+
+    __tablename__ = "course_achievements"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    course_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(30), primary_key=True)
+    achieved_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class ChallengeSession(UUIDPrimaryKeyMixin, Base):
+    """実力テスト / ボス戦の受験セッション。出題はサーバーが決め、提出時に採点する。"""
+
+    __tablename__ = "challenge_sessions"
+    __table_args__ = (Index("ix_challenge_sessions_user_course", "user_id", "course_id"),)
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    course_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    mode: Mapped[str] = mapped_column(String(20), nullable=False)
+    question_ids: Mapped[list] = mapped_column(JSONB, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="open", nullable=False)
+    correct_count: Mapped[int | None] = mapped_column(Integer)
+    activity_date: Mapped[date] = mapped_column(Date, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

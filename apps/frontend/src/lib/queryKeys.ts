@@ -10,5 +10,7 @@ export const queryKeys = {
   catalog: ["catalog", "courses"] as const,
   catalogCourse: (courseId: string) => ["catalog", "course", courseId] as const,
   gamification: ["gamification", "me"] as const,
+  badges: ["gamification", "badges"] as const,
+  challenge: (id: string) => ["challenge", id] as const,
   reviewTask: (taskId: string) => ["ai", "review", taskId] as const,
 };

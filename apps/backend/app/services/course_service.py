@@ -177,7 +177,7 @@ class CourseService:
                 key=g.lesson_key(lesson_id),
                 today=today,
             )
-            await self.gamification.evaluate_daily_quests(user_id, today)
+            await self.gamification.after_activity(user_id, today)
 
         return SubmitLessonResponse(
             submission_id=str(submission.id),

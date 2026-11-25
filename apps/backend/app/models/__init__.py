@@ -1,7 +1,14 @@
 from app.models.async_task import AsyncTask, TaskStatus
 from app.models.base import Base
 from app.models.course import Course, CourseLevel
-from app.models.gamification import QuestionAttempt, UserStats, XpEvent
+from app.models.gamification import (
+    ChallengeSession,
+    CourseAchievement,
+    QuestionAttempt,
+    UserBadge,
+    UserStats,
+    XpEvent,
+)
 from app.models.generated_problem import GeneratedProblem, GenerationStatus
 from app.models.learning_streak import LearningStreak
 from app.models.lesson import Difficulty, Lesson, LessonType
@@ -38,4 +45,7 @@ __all__ = [
     "QuestionAttempt",
     "UserStats",
     "XpEvent",
+    "UserBadge",
+    "CourseAchievement",
+    "ChallengeSession",
 ]

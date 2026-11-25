@@ -48,6 +48,14 @@ export type Course = {
   tags: string[];
   /** 解放に必要なコースのタイトル */
   prerequisiteTitles: string[];
+  prerequisiteIds: string[];
+  /** 次のコースの解放条件を満たしたか */
+  isCleared: boolean;
+  /** 実力テスト合格による飛び級 */
+  skipped: boolean;
+  bossDefeated: boolean;
+  canTakePlacement: boolean;
+  canChallengeBoss: boolean;
 };
 
 export type CourseDetail = Course & { questions: Question[] };

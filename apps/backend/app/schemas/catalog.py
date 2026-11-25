@@ -23,6 +23,13 @@ class CatalogCourseSummary(BaseModel):
     progress: int  # 0-100
     status: CourseStatus
     is_locked: bool
+    # 次のコースの解放条件を満たしたか (70% 正解 or 実力テスト合格)
+    is_cleared: bool
+    # 実力テスト合格によりクリア扱いになったか
+    skipped: bool
+    boss_defeated: bool
+    can_take_placement: bool
+    can_challenge_boss: bool
 
 
 class CatalogCourseListResponse(BaseModel):

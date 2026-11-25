@@ -12,6 +12,9 @@ import { CodingPage } from "@/pages/CodingPage";
 import { HistoryPage } from "@/pages/HistoryPage";
 import { AttemptDetailPage } from "@/pages/AttemptDetailPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+import { StageMapPage } from "@/pages/StageMapPage";
+import { AchievementsPage } from "@/pages/AchievementsPage";
+import { ChallengePage } from "@/pages/ChallengePage";
 
 export default function App() {
   return (
@@ -32,6 +35,9 @@ export default function App() {
         <Route path="/courses/:courseId" element={<CourseLessonsPage />} />
         <Route path="/lessons/:lessonId" element={<LessonPage />} />
         <Route path="/practice" element={<CodingPage />} />
+        <Route path="/map" element={<StageMapPage />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
+        <Route path="/challenges/:challengeId" element={<ChallengePage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/history/:attemptId" element={<AttemptDetailPage />} />
       </Route>

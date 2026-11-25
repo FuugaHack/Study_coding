@@ -32,6 +32,12 @@ function toCourse(c: CatalogCourseSummary): Course {
     isLocked: c.is_locked,
     tags: c.tags,
     prerequisiteTitles: c.prerequisite_titles,
+    prerequisiteIds: c.prerequisites,
+    isCleared: c.is_cleared,
+    skipped: c.skipped,
+    bossDefeated: c.boss_defeated,
+    canTakePlacement: c.can_take_placement,
+    canChallengeBoss: c.can_challenge_boss,
   };
 }
 
