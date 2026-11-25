@@ -24,6 +24,8 @@ class ChallengeResponse(BaseModel):
     time_limit_seconds: int
     expires_at: datetime
     pass_percent: int
+    # クライアントの時計ずれを補正するためのサーバー時刻
+    server_now: datetime
 
 
 class SubmitChallengeRequest(BaseModel):
@@ -35,8 +37,9 @@ class ChallengeQuestionResult(BaseModel):
     question_id: str
     correct: bool
     blank_results: list[bool] = Field(default_factory=list)
-    correct_answer: str | list[str]
-    explanation: str
+    # 合格時のみ返す
+    correct_answer: str | list[str] | None = None
+    explanation: str | None = None
 
 
 class ChallengeResultResponse(BaseModel):

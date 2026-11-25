@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from app.content.loader import Catalog
+from app.content.loader import Catalog, Question
 from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
 from app.domain import challenge as ch
 from app.domain import gamification as g
@@ -20,6 +20,8 @@ from app.services.gamification_service import GamificationService
 
 # 同じコースの実力テストは 1 日 1 回まで (答えを覚えて再受験する総当たりを防ぐ)
 PLACEMENT_ATTEMPTS_PER_DAY = 1
+# ボス戦も同じコースは 1 日 3 回まで (正誤フィードバックからの総当たりを防ぐ)
+BOSS_ATTEMPTS_PER_DAY = 3
 
 
 class ChallengeService:
@@ -57,6 +59,12 @@ class ChallengeService:
         else:
             if not view.is_unlocked(course) or not view.is_cleared(course):
                 raise ForbiddenError("ボスに挑戦するには、コースの 70% に正解しよう")
+            taken = await self.repo.count_challenges(user_id, course.id, "boss", today)
+            if taken >= BOSS_ATTEMPTS_PER_DAY:
+                raise ConflictError(
+                    f"このコースのボス戦は 1 日 {BOSS_ATTEMPTS_PER_DAY} 回までです。"
+                    "復習してから明日また挑もう!"
+                )
 
         questions = ch.select_questions(course, req.mode)
         limit = ch.time_limit_seconds(req.mode, len(questions))
@@ -94,10 +102,12 @@ class ChallengeService:
         timed_out = now > session.expires_at + timedelta(seconds=ch.SUBMIT_GRACE_SECONDS)
         today = g.local_today()
 
-        results: list[ChallengeQuestionResult] = []
-        correct = 0
+        graded: list[tuple[Question, bool, list[bool]]] = []
         for qid in session.question_ids:
-            _, question = self.catalog.find_question(qid)
+            found = self.catalog.find_question(qid)
+            if found is None:  # コンテンツ更新で削除された問題は採点対象外
+                continue
+            question = found[1]
             submitted = req.answers.get(qid)
             answer = (
                 submitted.model_dump(exclude={"time_spent_seconds"}, exclude_none=True)
@@ -121,24 +131,39 @@ class ChallengeService:
                     activity_date=today,
                     time_spent_seconds=None,
                 )
-            correct += ok
-            results.append(
-                ChallengeQuestionResult(
-                    question_id=qid,
-                    correct=ok,
-                    blank_results=blanks,
-                    correct_answer=question.answer,
-                    explanation=question.explanation,
-                )
-            )
+            graded.append((question, ok, blanks))
 
-        score = ch.ChallengeScore(correct=correct, total=len(session.question_ids))
+        correct = sum(1 for _, ok, _ in graded if ok)
+        score = ch.ChallengeScore(correct=correct, total=len(graded))
+        # 正解・解説は合格したときだけ返す。不合格・時間切れでは正誤のみ
+        # (答えを見るためだけに受験 → 通常回答で満額 XP、という抜け道を防ぐ)
+        results = [
+            ChallengeQuestionResult(
+                question_id=q.id,
+                correct=ok,
+                blank_results=blanks,
+                correct_answer=q.answer if score.passed else None,
+                explanation=q.explanation if score.passed else None,
+            )
+            for q, ok, blanks in graded
+        ]
         session.status = "passed" if score.passed else "failed"
         session.correct_count = correct
         session.completed_at = now
 
         summary = await self.gamification.begin_summary(user_id)
         if score.passed:
+            # 未解決の問題の答えを見せた場合は「表示済み」として初回正解キーを 0 XP で埋める。
+            # 以後その問題に正解しても復習 XP のみ (M1 の正解表示ルールと同じ扱い)
+            for q, ok, _ in graded:
+                if not ok and not before.status.get(q.id):
+                    await self.gamification.award(
+                        user_id,
+                        amount=0,
+                        reason="revealed",
+                        key=g.first_correct_key(q.id),
+                        today=today,
+                    )
             if session.mode == "placement":
                 for cid in {course.id, *ch.ancestors(self.catalog, course.id)}:
                     await self.repo.insert_achievement(user_id, cid, "placement_passed")
@@ -201,7 +226,11 @@ class ChallengeService:
 
     def _to_response(self, session: ChallengeSession, status: dict[str, bool]) -> ChallengeResponse:
         course = self.catalog.get_course(session.course_id)
-        questions = [self.catalog.find_question(qid)[1] for qid in session.question_ids]
+        questions = [
+            found[1]
+            for qid in session.question_ids
+            if (found := self.catalog.find_question(qid)) is not None
+        ]
         return ChallengeResponse(
             id=str(session.id),
             course_id=course.id,
@@ -214,4 +243,5 @@ class ChallengeService:
             time_limit_seconds=ch.time_limit_seconds(session.mode, len(questions)),
             expires_at=session.expires_at,
             pass_percent=round(ch.PASS_RATIO * 100),
+            server_now=datetime.now(UTC),
         )

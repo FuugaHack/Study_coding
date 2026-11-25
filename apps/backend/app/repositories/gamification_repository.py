@@ -207,6 +207,16 @@ class GamificationRepository:
         )
         return int((await self.db.execute(stmt)).scalar_one())
 
+    async def in_open_challenge(self, user_id: str, question_id: str, since: datetime) -> bool:
+        """question_id を含む、受験中 (未提出かつ期限内) のチャレンジがあるか。"""
+        stmt = select(ChallengeSession.id).where(
+            ChallengeSession.user_id == user_id,
+            ChallengeSession.status == "open",
+            ChallengeSession.expires_at > since,
+            ChallengeSession.question_ids.contains([question_id]),
+        )
+        return (await self.db.execute(stmt.limit(1))).first() is not None
+
     async def bosses_defeated(self, user_id: str, start: date, end: date) -> int:
         stmt = select(func.count()).where(
             ChallengeSession.user_id == user_id,

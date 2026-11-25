@@ -14,6 +14,8 @@ export interface ChallengeResponse {
   time_limit_seconds: number;
   expires_at: string;
   pass_percent: number;
+  /** クライアントの時計ずれ補正用 */
+  server_now: string;
 }
 
 export interface SubmitChallengeRequest {
@@ -24,8 +26,9 @@ export interface ChallengeQuestionResult {
   question_id: string;
   correct: boolean;
   blank_results: boolean[];
-  correct_answer: string | string[];
-  explanation: string;
+  /** 合格時のみ */
+  correct_answer: string | string[] | null;
+  explanation: string | null;
 }
 
 export interface ChallengeResultResponse {

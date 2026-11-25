@@ -234,6 +234,7 @@ async def test_boss_requires_clear_then_rewards_once(auth_client: AsyncClient) -
     lose = (await _start(auth_client, "course-javascript", "boss")).json()
     res = await auth_client.post(f"{API}/challenges/{lose['id']}/submit", json={"answers": {}})
     assert not res.json()["passed"] and res.json()["percent"] == 0
+    assert all(r["correct_answer"] is None for r in res.json()["results"])
 
     win = (await _start(auth_client, "course-javascript", "boss")).json()
     result = await _submit_all_correct(auth_client, win)
@@ -247,6 +248,7 @@ async def test_boss_requires_clear_then_rewards_once(auth_client: AsyncClient) -
         auth_client, (await _start(auth_client, "course-javascript", "boss")).json()
     )
     assert again["passed"] and again["reward"]["xp_gained"] == 0  # 報酬は初回のみ
+    assert (await _start(auth_client, "course-javascript", "boss")).status_code == 409  # 1 日 3 回
 
 
 async def test_submit_twice_and_timeout(auth_client: AsyncClient, session_factory) -> None:
@@ -259,7 +261,7 @@ async def test_submit_twice_and_timeout(auth_client: AsyncClient, session_factor
 
     result = await _submit_all_correct(auth_client, challenge)
     assert result["timed_out"] and not result["passed"]
-    assert result["results"][0]["correct_answer"]  # 時間切れでも答え合わせはできる
+    assert result["results"][0]["correct_answer"] is None  # 不合格では答えを見せない
 
     res = await auth_client.post(
         f"{API}/challenges/{challenge['id']}/submit", json={"answers": {}}
@@ -279,3 +281,58 @@ async def test_challenge_belongs_to_user(auth_client: AsyncClient, client: Async
         f"{API}/challenges/{challenge['id']}", headers={"Authorization": f"Bearer {other}"}
     )
     assert res.status_code == 404
+
+
+# ================================================================ review fixes
+
+
+async def test_practice_blocked_during_open_challenge(auth_client: AsyncClient) -> None:
+    challenge = (await _start(auth_client, "course-html-css", "placement")).json()
+    qid = challenge["questions"][0]["id"]
+    res = await auth_client.post(
+        f"{API}/catalog/questions/{qid}/answer", json=_correct_payload(qid)
+    )
+    assert res.status_code == 409
+
+    await auth_client.post(f"{API}/challenges/{challenge['id']}/submit", json={"answers": {}})
+    assert (await _answer(auth_client, qid))["result"] == "correct"
+
+
+async def test_answers_revealed_by_passed_challenge_give_review_xp(
+    auth_client: AsyncClient,
+) -> None:
+    challenge = (await _start(auth_client, "course-javascript", "placement")).json()
+    answers = {q["id"]: _correct_payload(q["id"]) for q in challenge["questions"]}
+    missed = challenge["questions"][0]["id"]
+    del answers[missed]  # 1 問だけ空欄 (5 問中 4 問正解 = 80% で合格)
+    res = await auth_client.post(
+        f"{API}/challenges/{challenge['id']}/submit", json={"answers": answers}
+    )
+    body = res.json()
+    assert body["passed"]
+    assert next(r for r in body["results"] if r["question_id"] == missed)["correct_answer"]
+
+    later = await _answer(auth_client, missed)
+    assert later["result"] == "correct"
+    quest_xp = sum(q["reward_xp"] for q in later["reward"]["completed_quests"])
+    assert later["reward"]["xp_gained"] - quest_xp == g.REVIEW_XP
+
+
+async def test_cannot_buy_freeze_after_missing_days(
+    auth_client: AsyncClient, session_factory
+) -> None:
+    await _answer(auth_client, "q-html-heading")
+    async with session_factory() as s:
+        await s.execute(
+            update(UserStats).values(
+                coins=200, last_active_date=g.local_today() - timedelta(days=3)
+            )
+        )
+        await s.commit()
+    res = await auth_client.post(f"{API}/gamification/shop/streak-freeze")
+    assert res.status_code == 409
+
+
+async def test_challenge_response_has_server_time(auth_client: AsyncClient) -> None:
+    challenge = (await _start(auth_client, "course-html-css", "placement")).json()
+    assert challenge["server_now"] < challenge["expires_at"]

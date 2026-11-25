@@ -19,7 +19,7 @@ const MODE_LABEL = { placement: "実力テスト", boss: "ボス戦" } as const;
 
 export function ChallengePage() {
   const { challengeId = "" } = useParams();
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, dataUpdatedAt } = useQuery({
     queryKey: queryKeys.challenge(challengeId),
     queryFn: () => getChallenge(challengeId),
     // 受験中に再取得して入力が消えないようにする
@@ -40,10 +40,18 @@ export function ChallengePage() {
       </div>
     );
   }
-  return <ChallengeRunner challenge={data} />;
+  // サーバー時刻とのずれ (ms)。端末の時計がずれていても残り時間を正しく出す
+  const clockOffset = new Date(data.server_now).getTime() - dataUpdatedAt;
+  return <ChallengeRunner challenge={data} clockOffset={clockOffset} />;
 }
 
-function ChallengeRunner({ challenge }: { challenge: ChallengeResponse }) {
+function ChallengeRunner({
+  challenge,
+  clockOffset,
+}: {
+  challenge: ChallengeResponse;
+  clockOffset: number;
+}) {
   const qc = useQueryClient();
   const pushReward = useRewardStore((s) => s.push);
   const [answers, setAnswers] = useState<Record<string, AnswerRequest>>({});
@@ -57,13 +65,18 @@ function ChallengeRunner({ challenge }: { challenge: ChallengeResponse }) {
       void qc.invalidateQueries({ queryKey: ["catalog"] });
       void qc.invalidateQueries({ queryKey: queryKeys.badges });
       pushReward(res.reward);
+      // 再訪時に「受験中」のキャッシュを使わず、提出済みの状態を取り直す
+      void qc.invalidateQueries({
+        queryKey: queryKeys.challenge(challenge.id),
+        refetchType: "none",
+      });
     },
   });
 
   const onTimeUp = useCallback(() => {
     if (!submit.isPending && !submit.data) submit.mutate();
   }, [submit]);
-  const remaining = useCountdown(challenge.expires_at, onTimeUp, !submit.data);
+  const remaining = useCountdown(challenge.expires_at, clockOffset, onTimeUp, !submit.data);
 
   if (submit.data) return <ChallengeResult challenge={challenge} result={submit.data} />;
 
@@ -197,12 +210,20 @@ function ChallengeResult({
 
       <section>
         <h2 className="mb-3 text-lg font-semibold text-slate-900">答え合わせ</h2>
+        {!result.passed && (
+          <p className="mb-3 text-sm text-slate-600">
+            不合格のときは正誤だけを表示します。間違えた問題はコースで練習して、また挑戦しよう!
+          </p>
+        )}
         <ol className="space-y-3">
           {result.results.map((r, i) => {
             const q = challenge.questions.find((x) => x.id === r.question_id);
             const answer = Array.isArray(r.correct_answer)
               ? r.correct_answer.join(" / ")
               : r.correct_answer;
+            const wrongBlanks = r.blank_results
+              .map((ok, idx) => (ok ? null : idx + 1))
+              .filter((n): n is number => n !== null);
             return (
               <li
                 key={r.question_id}
@@ -214,9 +235,18 @@ function ChallengeResult({
                 <div className="font-semibold text-slate-900">
                   {r.correct ? "⭕" : "❌"} Q{i + 1}. {q?.title}
                 </div>
-                <div className="mt-1 text-slate-700">
-                  正解: <code className="font-mono">{answer}</code>
-                </div>
+                {answer != null ? (
+                  <div className="mt-1 text-slate-700">
+                    正解: <code className="font-mono">{answer}</code>
+                  </div>
+                ) : (
+                  !r.correct &&
+                  wrongBlanks.length > 0 && (
+                    <div className="mt-1 text-slate-600">
+                      穴 {wrongBlanks.join("・")} が違います
+                    </div>
+                  )
+                )}
                 {r.explanation && <div className="mt-1 text-slate-600">{r.explanation}</div>}
               </li>
             );
@@ -333,17 +363,22 @@ function AnswerInput({
 
 // -------------------------------------------------------------- タイマー
 
-function useCountdown(expiresAt: string, onExpire: () => void, active: boolean): number {
+function useCountdown(
+  expiresAt: string,
+  clockOffset: number,
+  onExpire: () => void,
+  active: boolean,
+): number {
   const deadline = new Date(expiresAt).getTime();
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now() + clockOffset);
   const fired = useRef(false);
   const remaining = Math.max(0, Math.ceil((deadline - now) / 1000));
 
   useEffect(() => {
     if (!active) return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
+    const t = setInterval(() => setNow(Date.now() + clockOffset), 1000);
     return () => clearInterval(t);
-  }, [active]);
+  }, [active, clockOffset]);
 
   useEffect(() => {
     if (active && remaining === 0 && !fired.current) {

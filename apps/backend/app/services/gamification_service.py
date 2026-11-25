@@ -149,6 +149,11 @@ class GamificationService:
             raise ConflictError(f"ストリークフリーズは最大 {g.MAX_STREAK_FREEZES} 個まで持てます")
         if stats.coins < g.STREAK_FREEZE_COST:
             raise ConflictError("コインが足りません")
+        # フリーズは「休む前に備える」アイテム。休んだ後に買って途切れた記録を戻すことはできない
+        if g.missed_days(stats.last_active_date, g.local_today()) > 0:
+            raise ConflictError(
+                "ストリークフリーズは休む前に準備するアイテムです。今日 1 問解いてから購入しよう"
+            )
         # 台帳にも記録する (XP は 0、コインはマイナス)
         await self.repo.insert_xp_event(
             user_id=user_id,

@@ -1,7 +1,13 @@
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 
 from app.content.loader import Catalog, Course, Question
-from app.core.exceptions import ForbiddenError, NotFoundError, UnprocessableError
+from app.core.exceptions import (
+    ConflictError,
+    ForbiddenError,
+    NotFoundError,
+    UnprocessableError,
+)
 from app.domain import challenge as ch
 from app.domain import gamification as g
 from app.domain.grading import InvalidAnswerError, grade
@@ -101,6 +107,9 @@ class CatalogService:
 
         if not (await self.progress(user_id)).is_unlocked(course):
             raise ForbiddenError("前提コースをクリアすると挑戦できます")
+        grace = timedelta(seconds=ch.SUBMIT_GRACE_SECONDS)
+        if await self.repo.in_open_challenge(user_id, question.id, datetime.now(UTC) - grace):
+            raise ConflictError("チャレンジ受験中の問題は、提出してから練習しよう")
 
         answer = req.model_dump(exclude={"time_spent_seconds"}, exclude_none=True)
         try:
