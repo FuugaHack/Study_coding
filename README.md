@@ -2,7 +2,7 @@
 
 AIで個別最適化するプログラミング学習プラットフォーム。モノレポ構成。
 
-リポジトリ: https://github.com/FUUGA427/Study_coding
+リポジトリ: https://github.com/FuugaHack/Study_coding
 
 ## ブランチ運用
 
