@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: learning_platform
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: apps/backend
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/learning_platform
+      TEST_DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/learning_platform_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/backend/pyproject.toml
+      - run: pip install ".[dev]"
+      # 既存コードには未対応の lint 違反があるため、M1 以降に追加したモジュールのみ対象 (Issue: lint 全体適用)
+      - name: Lint (new modules)
+        run: >-
+          ruff check app/content app/domain app/models/gamification.py
+          app/repositories/gamification_repository.py app/services/catalog_service.py
+          app/services/gamification_service.py app/schemas/catalog.py app/schemas/gamification.py
+          app/api/v1/catalog.py app/api/v1/gamification.py
+          app/db/migrations/versions/0002_gamification.py tests
+      - name: Migrations apply cleanly
+        run: alembic upgrade head
+      - name: Tests
+        run: pytest -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck --workspace apps/frontend
+      - name: Build
+        run: npm run build --workspace apps/frontend

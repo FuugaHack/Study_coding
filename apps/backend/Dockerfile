@@ -7,7 +7,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir .
+# 開発用イメージ (docker compose) ではテスト用の dev 依存も入れる
+ARG INSTALL_DEV=false
+RUN if [ "$INSTALL_DEV" = "true" ]; then pip install --no-cache-dir ".[dev]"; \
+    else pip install --no-cache-dir .; fi
 
 COPY . .
 

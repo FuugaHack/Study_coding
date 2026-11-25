@@ -75,8 +75,8 @@ export function CourseCard({ course, index }: Props) {
 
       <dl className="mt-4 grid grid-cols-3 gap-2 text-center text-[11px] text-slate-500">
         <div className="rounded-lg bg-slate-50 py-1.5">
-          <dt>レッスン</dt>
-          <dd className="text-sm font-semibold text-slate-800">{course.lessonCount}</dd>
+          <dt>正解済み</dt>
+          <dd className="text-sm font-semibold text-slate-800">{course.solvedCount}</dd>
         </div>
         <div className="rounded-lg bg-slate-50 py-1.5">
           <dt>問題</dt>
@@ -130,6 +130,12 @@ export function CourseCard({ course, index }: Props) {
         </span>
       </div>
 
+      {locked && course.prerequisiteTitles.length > 0 && (
+        <p className="mt-2 text-[11px] text-slate-500">
+          🔓 解放条件: 「{course.prerequisiteTitles.join("」「")}」の 70% に正解
+        </p>
+      )}
+
       {completed && (
         <div
           aria-hidden
@@ -150,7 +156,11 @@ export function CourseCard({ course, index }: Props) {
       <div
         className={wrapperClass}
         style={style}
-        title={`このコースは ${STATUS_LABEL.locked} です`}
+        title={
+          course.prerequisiteTitles.length
+            ? `「${course.prerequisiteTitles.join("」「")}」をクリアすると解放されます`
+            : `このコースは ${STATUS_LABEL.locked} です`
+        }
         aria-disabled
       >
         {body}

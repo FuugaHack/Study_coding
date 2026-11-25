@@ -1,3 +1,5 @@
+// UI で使うカタログ型 (API レスポンスを src/api/catalog.ts で変換したもの)
+
 export type CourseLevel = "beginner" | "intermediate" | "advanced";
 
 export type CourseCategory =
@@ -15,26 +17,18 @@ export type QuestionType = "choice" | "multiple-choice" | "text" | "code";
 
 export type QuestionDifficulty = "easy" | "normal" | "hard";
 
+/** 正解・解説はサーバーが回答後にのみ返す (クライアントには同梱しない) */
 export type Question = {
   id: string;
   type: QuestionType;
   title: string;
   description: string;
-  choices?: string[];
-  /** choice/multiple-choice: 正解ラベル(複数選択なら配列)、text/code: 模範解答(text)または穴埋め解答リスト(code) */
-  answer: string | string[];
-  explanation: string;
+  choices: string[];
   difficulty: QuestionDifficulty;
-  /** code 型のみ: ユーザーに見せるテンプレート(`___` の箇所が穴埋め対象) */
-  codeTemplate?: string;
-};
-
-export type Lesson = {
-  id: string;
-  title: string;
-  description: string;
-  order: number;
-  questions: Question[];
+  /** code 型のみ: `___` の箇所が穴埋め対象 */
+  codeTemplate: string;
+  blankCount: number;
+  solved: boolean;
 };
 
 export type Course = {
@@ -45,17 +39,18 @@ export type Course = {
   level: CourseLevel;
   status: CourseStatus;
   icon: string;
-  /** Tailwindのカテゴリ別アクセントグラデ用 (catalogStylesと整合) */
-  color: string;
   estimatedHours: number;
-  lessonCount: number;
   questionCount: number;
+  solvedCount: number;
   /** 0〜100 */
   progress: number;
   isLocked: boolean;
   tags: string[];
-  lessons: Lesson[];
+  /** 解放に必要なコースのタイトル */
+  prerequisiteTitles: string[];
 };
+
+export type CourseDetail = Course & { questions: Question[] };
 
 export type CourseCatalogResponse = {
   courses: Course[];

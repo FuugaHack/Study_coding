@@ -4,6 +4,7 @@ from decimal import Decimal
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.gamification import local_today
 from app.models.learning_streak import LearningStreak
 from app.models.problem_attempt import ProblemAttempt
 from app.models.submission import Submission
@@ -194,7 +195,7 @@ class AttemptRepository:
     # ---- Learning Streak ----
 
     async def record_streak(self, user_id: str, score: int) -> None:
-        today = datetime.now(timezone.utc).date()
+        today = local_today()
         stmt = select(LearningStreak).where(
             and_(
                 LearningStreak.user_id == user_id,

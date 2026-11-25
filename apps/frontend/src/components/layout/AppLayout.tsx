@@ -1,6 +1,9 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import clsx from "clsx";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth";
+import { GamificationBar } from "@/components/gamification/GamificationBar";
+import { RewardToaster } from "@/components/gamification/RewardToaster";
 
 type NavItem = {
   to: string;
@@ -19,9 +22,12 @@ const NAV: NavItem[] = [
 export function AppLayout() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const onLogout = () => {
     logout();
+    // 次にログインしたユーザーに前のユーザーの XP・進捗キャッシュが見えないようにする
+    queryClient.clear();
     navigate("/login", { replace: true });
   };
 
@@ -59,7 +65,10 @@ export function AppLayout() {
               </NavLink>
             ))}
           </nav>
-          <button onClick={onLogout} className="ml-auto btn-secondary">
+          <div className="ml-auto">
+            <GamificationBar />
+          </div>
+          <button onClick={onLogout} className="btn-secondary">
             ログアウト
           </button>
         </div>
@@ -69,6 +78,7 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+      <RewardToaster />
     </div>
   );
 }
