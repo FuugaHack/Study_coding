@@ -48,6 +48,8 @@ class Execution(BaseModel):
     # CI で実行してテストが全て通ることを検証する
     reference_solution: str
     time_limit_s: float = 2.0
+    # 使用を禁止する名前 (Python のみ。提出前に構文木で検査する)
+    forbidden_names: list[str] = Field(default_factory=list)
 
 
 class CodingQuestion(BaseModel):

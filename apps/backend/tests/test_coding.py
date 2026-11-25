@@ -326,3 +326,114 @@ async def test_lesson_detail_does_not_leak_answers(
         lesson_id = str(lesson.id)
     detail = (await auth_client.get(f"/api/v1/courses/lessons/{lesson_id}")).json()
     assert detail["content"] == {"question": "?", "choices": ["a", "b"]}
+
+
+# ================================================================ review fixes (M3)
+
+
+@pytest.mark.parametrize(
+    ("code", "found"),
+    [
+        ("def my_sum(n):\n    return sum(n)\n", ["sum"]),
+        ("_s = sum\ndef my_sum(n):\n    return _s(n)\n", ["sum"]),
+        ("import builtins\ndef my_sum(n):\n    return builtins.sum(n)\n", ["builtins", "sum"]),
+        (
+            "def my_sum(n):\n    return getattr(__builtins__, 'su' + 'm')(n)\n",
+            ["__builtins__", "getattr"],
+        ),
+        ("def my_sum(n):\n    t = 0\n    for x in n:\n        t += x\n    return t\n", []),
+        ("def broken(:\n", []),  # 構文エラーは実行時に報告する
+    ],
+)
+def test_find_forbidden_python(code: str, found: list[str]) -> None:
+    from app.domain.code_rules import find_forbidden_python
+
+    assert find_forbidden_python(code, ["sum"]) == found
+
+
+async def test_forbidden_name_fails_without_running(
+    auth_client: AsyncClient, runner: FakeRunner
+) -> None:
+    res = await _submit(auth_client, "_s = sum  # PASS\ndef my_sum(n):\n    return _s(n)\n")
+    assert res["passed"] is False
+    assert all(r["status"] == "error" for r in res["results"])
+    assert runner.calls == []
+
+
+async def test_one_execution_per_user_at_a_time(
+    auth_client: AsyncClient, runner: FakeRunner
+) -> None:
+    from jose import jwt
+
+    from app.config import settings
+    from app.core.rate_limit import get_redis
+
+    r = await get_redis()
+    token = auth_client.headers["Authorization"].split()[1]
+    user_id = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])["sub"]
+    await r.set(f"runner:busy:{user_id}", "1", ex=60)
+    res = await auth_client.post(f"{API}/issues/{PY_QUESTION}/run", json={"code": "PASS"})
+    assert res.status_code == 429
+    await r.delete(f"runner:busy:{user_id}")
+    res = await auth_client.post(f"{API}/issues/{PY_QUESTION}/run", json={"code": "PASS"})
+    assert res.status_code == 200
+
+
+async def test_runner_busy_maps_to_429(auth_client: AsyncClient) -> None:
+    from app.main import app
+    from app.services.runner_client import RunnerBusyError
+
+    class BusyRunner:
+        async def run(self, *a, **k):
+            raise RunnerBusyError()
+
+    app.dependency_overrides[get_runner_client] = lambda: BusyRunner()
+    try:
+        res = await auth_client.post(f"{API}/issues/{PY_QUESTION}/run", json={"code": "x"})
+        assert res.status_code == 429
+    finally:
+        app.dependency_overrides.pop(get_runner_client, None)
+
+
+def test_guard_strips_code_examples_when_failed() -> None:
+    raw = review_json()
+    raw["improvements"] = [{"title": "t", "detail": "d", "code_example": "def my_sum(n): ..."}]
+    failed = cr.apply_objective_guard(cr.CodeReview.model_validate(raw), passed=False)
+    assert failed.improvements[0].code_example is None
+    passed = cr.apply_objective_guard(cr.CodeReview.model_validate(raw), passed=True)
+    assert passed.improvements[0].code_example
+
+
+async def test_dispute_only_once(auth_client: AsyncClient, runner: FakeRunner) -> None:
+    sub = await _submit(auth_client, "wrong")
+    url = f"{API}/submissions/{sub['submission_id']}/dispute"
+    assert (await auth_client.post(url, json={"reason": "a"})).status_code == 204
+    assert (await auth_client.post(url, json={"reason": "b"})).status_code == 409
+
+
+async def test_lesson_detail_hides_expected_output(
+    auth_client: AsyncClient, session_factory
+) -> None:
+    from app.models import Course, CourseLevel, Difficulty, Lesson, LessonType
+
+    async with session_factory() as s:
+        course = Course(title="c", level=CourseLevel.beginner, is_published=True)
+        s.add(course)
+        await s.flush()
+        lesson = Lesson(
+            course_id=course.id,
+            title="l",
+            lesson_type=LessonType.coding,
+            difficulty=Difficulty.easy,
+            content={
+                "language": "python",
+                "test_cases": [{"input": "1", "expected_output": "2"}],
+            },
+            tags=[],
+            is_published=True,
+        )
+        s.add(lesson)
+        await s.commit()
+        lesson_id = str(lesson.id)
+    detail = (await auth_client.get(f"/api/v1/courses/lessons/{lesson_id}")).json()
+    assert detail["content"]["test_cases"] == [{"input": "1"}]

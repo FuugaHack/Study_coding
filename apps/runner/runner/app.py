@@ -16,9 +16,12 @@ from runner.executor import Language, Sandbox, TestCase
 
 RUNNER_TOKEN = os.environ.get("RUNNER_TOKEN", "")
 SLOTS = int(os.environ.get("RUNNER_SLOTS", "2"))
+# 実行待ちの上限。超えたら 429 を返して backend に「混雑中」と伝える
+MAX_WAITING = int(os.environ.get("RUNNER_MAX_WAITING", "8"))
 
 sandbox = Sandbox(slots=SLOTS)
 _free_uids: asyncio.Queue[int] | None = None
+_waiting = 0
 
 
 @asynccontextmanager
@@ -45,7 +48,8 @@ class TestCaseIn(BaseModel):
 
 class RunRequest(BaseModel):
     language: Language
-    code: str = Field(max_length=20_000)
+    # backend 側の上限 (20,000 文字) にテスト用の呼び出しコードを足しても収まるようにする
+    code: str = Field(max_length=40_000)
     tests: list[TestCaseIn] = Field(min_length=1, max_length=20)
     time_limit_s: float = Field(default=2.0, gt=0, le=5)
 
@@ -68,8 +72,15 @@ async def health() -> dict:
 
 @app.post("/run", response_model=RunResponse, dependencies=[Depends(verify_token)])
 async def run(req: RunRequest) -> RunResponse:
+    global _waiting
     assert _free_uids is not None
-    uid = await _free_uids.get()  # 空きスロットが出るまで待つ (同時実行数の上限)
+    if _free_uids.empty() and _waiting >= MAX_WAITING:
+        raise HTTPException(status_code=429, detail="busy")
+    _waiting += 1
+    try:
+        uid = await _free_uids.get()  # 空きスロットが出るまで待つ (同時実行数の上限)
+    finally:
+        _waiting -= 1
     try:
         results = await asyncio.to_thread(
             sandbox.run_tests,

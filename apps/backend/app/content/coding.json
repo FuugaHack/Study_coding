@@ -1157,7 +1157,10 @@
             "hidden": true
           }
         ],
-        "reference_solution": "def my_sum(nums: list[int]) -> int:\n    total = 0\n    for n in nums:\n        total += n\n    return total\n"
+        "reference_solution": "def my_sum(nums: list[int]) -> int:\n    total = 0\n    for n in nums:\n        total += n\n    return total\n",
+        "forbidden_names": [
+          "sum"
+        ]
       }
     },
     {

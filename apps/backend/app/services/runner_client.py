@@ -9,12 +9,17 @@ from dataclasses import dataclass
 import httpx
 
 from app.config import settings
-from app.core.exceptions import AIServiceError
+from app.core.exceptions import AIServiceError, RateLimitError
 
 
 class RunnerUnavailableError(AIServiceError):
     def __init__(self) -> None:
         super().__init__("コード実行環境に接続できません。しばらくしてからもう一度お試しください")
+
+
+class RunnerBusyError(RateLimitError):
+    def __init__(self) -> None:
+        super().__init__("コード実行が混み合っています。少し待ってからもう一度お試しください")
 
 
 @dataclass(frozen=True)
@@ -54,6 +59,8 @@ class RunnerClient:
                         "time_limit_s": time_limit_s,
                     },
                 )
+                if res.status_code == 429:
+                    raise RunnerBusyError()
                 res.raise_for_status()
         except (httpx.HTTPError, OSError) as e:
             raise RunnerUnavailableError() from e

@@ -29,8 +29,14 @@ Status = Literal["passed", "failed", "error", "timeout"]
 OUTPUT_LIMIT_BYTES = 64 * 1024
 FILE_SIZE_LIMIT_BYTES = 1024 * 1024
 PYTHON_MEMORY_BYTES = 256 * 1024 * 1024
+# node は V8 が大きな仮想アドレス空間を予約するため RLIMIT_AS ではなく RLIMIT_DATA で制限する
+NODE_DATA_BYTES = 256 * 1024 * 1024
 NODE_HEAP_MB = 128
 MAX_PROCESSES = 32
+# ユーザーコードが書き込める共有ディレクトリ。テストごとにスロット uid のファイルを消す
+SHARED_WRITABLE_DIRS = ("/tmp", "/dev/shm")
+# 実時間の上限 = CPU 時間の上限 + この猶予 (sleep などで CPU を使わず居座るのを防ぐ)
+WALL_GRACE_S = 0.5
 
 SOURCE_FILE: dict[str, str] = {
     "python": "main.py",
@@ -88,14 +94,17 @@ class Sandbox:
         uid: int,
         time_limit_s: float = 2.0,
     ) -> list[TestResult]:
+        # 作業ディレクトリとソースは root 所有・スロットのグループだけ読み取り可。
+        # ユーザーコードはここに書き込めず、他のスロットからも読めない
         workdir = Path(tempfile.mkdtemp(prefix="run-", dir="/tmp"))
         try:
-            os.chmod(workdir, 0o700)
             source = workdir / SOURCE_FILE[language]
             source.write_text(code, encoding="utf-8")
             if self.isolate_uid:
-                for p in (workdir, source):
-                    os.chown(p, uid, uid)
+                os.chown(workdir, 0, uid)
+                os.chown(source, 0, uid)
+            os.chmod(workdir, 0o750)
+            os.chmod(source, 0o640)
             return [
                 self._run_one(language, str(source), workdir, t, uid, time_limit_s)
                 for t in tests
@@ -112,6 +121,7 @@ class Sandbox:
         uid: int,
         time_limit_s: float,
     ) -> TestResult:
+        # 出力ファイルは root 所有。子プロセスは受け取った fd に書くだけ (RLIMIT_FSIZE が効く)
         out_path, err_path = workdir / "stdout.txt", workdir / "stderr.txt"
         isolate = self.isolate_uid
         cpu = max(1, int(time_limit_s + 0.999))
@@ -119,25 +129,23 @@ class Sandbox:
 
         def preexec() -> None:  # 子プロセス側 (fork 後・exec 前) で実行される
             os.setsid()
+            os.umask(0o077)  # 作ったファイルを他の uid から読み書きさせない
             resource.setrlimit(resource.RLIMIT_CPU, (cpu, cpu + 1))
             resource.setrlimit(resource.RLIMIT_FSIZE, (FILE_SIZE_LIMIT_BYTES,) * 2)
             resource.setrlimit(resource.RLIMIT_NOFILE, (128, 128))
             resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
             resource.setrlimit(resource.RLIMIT_NPROC, (MAX_PROCESSES, MAX_PROCESSES))
             if is_python:
-                # V8 は大きな仮想アドレス空間を予約するため node には設定しない
-                # (node は --max-old-space-size とコンテナのメモリ上限で制限)
                 resource.setrlimit(resource.RLIMIT_AS, (PYTHON_MEMORY_BYTES,) * 2)
+            else:
+                resource.setrlimit(resource.RLIMIT_DATA, (NODE_DATA_BYTES,) * 2)
             if isolate:
                 os.setgroups([])
                 os.setgid(uid)
                 os.setuid(uid)
 
-        env = {"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": str(workdir), "LANG": "C.UTF-8"}
+        env = {"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": "/nonexistent", "LANG": "C.UTF-8"}
         with open(out_path, "wb") as out, open(err_path, "wb") as err:
-            if isolate:
-                os.chown(out_path, uid, uid)
-                os.chown(err_path, uid, uid)
             started = time.monotonic()
             proc = subprocess.Popen(
                 _command(language, source),
@@ -151,7 +159,7 @@ class Sandbox:
             )
             timed_out = False
             try:
-                proc.communicate(test.stdin.encode("utf-8"), timeout=time_limit_s * 2)
+                proc.communicate(test.stdin.encode("utf-8"), timeout=time_limit_s + WALL_GRACE_S)
             except subprocess.TimeoutExpired:
                 timed_out = True
             finally:
@@ -159,6 +167,8 @@ class Sandbox:
                 if isolate:
                     # setsid などでグループから抜けたプロセスも、スロット uid ごと掃除する
                     _kill_uid(uid)
+                    # 共有ディレクトリに残したファイルも消す (次のテスト・次のユーザーへの持ち越し防止)
+                    _purge_uid_files(uid)
                 proc.wait()
             elapsed = int((time.monotonic() - started) * 1000)
 
@@ -194,6 +204,25 @@ def _kill_uid(uid: int) -> None:
                 continue
         if not found:
             return
+
+
+def _purge_uid_files(uid: int) -> None:
+    for top in SHARED_WRITABLE_DIRS:
+        if not os.path.isdir(top):
+            continue
+        for root, dirs, files in os.walk(top, topdown=False):
+            for name in files + dirs:
+                path = os.path.join(root, name)
+                try:
+                    st = os.lstat(path)
+                    if st.st_uid != uid:
+                        continue
+                    if os.path.isdir(path) and not os.path.islink(path):
+                        shutil.rmtree(path, ignore_errors=True)
+                    else:
+                        os.unlink(path)
+                except FileNotFoundError:
+                    continue
 
 
 def _read_head(path: Path) -> str:

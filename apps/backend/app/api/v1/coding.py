@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.core.rate_limit import rate_limit_ai, rate_limit_runner
+from app.core.rate_limit import rate_limit_ai, rate_limit_runner, runner_slot
 from app.core.security import get_current_user_id
 from app.dependencies import get_coding_service
 from app.schemas.coding import (
@@ -72,7 +72,8 @@ async def run_code(
     service: CodingService = Depends(get_coding_service),
 ):
     await rate_limit_runner(user_id)
-    return await service.run(user_id, question_id, req.code)
+    async with runner_slot(user_id):
+        return await service.run(user_id, question_id, req.code)
 
 
 @router.post("/issues/{question_id}/submit", response_model=SubmitResponse)
@@ -83,7 +84,8 @@ async def submit_code(
     service: CodingService = Depends(get_coding_service),
 ):
     await rate_limit_runner(user_id)
-    return await service.submit(user_id, question_id, req.code)
+    async with runner_slot(user_id):
+        return await service.submit(user_id, question_id, req.code)
 
 
 @router.post("/submissions/{submission_id}/review", response_model=ReviewResponse)

@@ -7,6 +7,7 @@ from app.content.coding import CodingCatalog, CodingQuestion, CodingRepository
 from app.core.exceptions import ConflictError, NotFoundError
 from app.domain import code_review as cr
 from app.domain import gamification as g
+from app.domain.code_rules import find_forbidden_python
 from app.models.gamification import CodingSubmission
 from app.repositories.coding_repository import CodingRepository as CodingRepo
 from app.schemas.coding import (
@@ -27,7 +28,7 @@ from app.schemas.coding import (
 from app.services.catalog_service import reward_response
 from app.services.gamification_service import GamificationService
 from app.services.llm import AIUnavailableError, LLMClient
-from app.services.runner_client import RunnerClient, RunTest
+from app.services.runner_client import RunnerClient, RunResult, RunTest
 
 # 初回合格の XP (難易度別)。ヒント 1 つにつき 20% 減 (最大 60% 減)
 CODING_XP = {"easy": 30, "normal": 45, "hard": 60}
@@ -193,9 +194,11 @@ class CodingService:
     # ------------------------------------------------------------------ AI レビュー
 
     async def review(self, user_id: str, submission_id: str) -> ReviewResponse:
-        submission = await self._submission(user_id, submission_id, for_update=True)
+        submission = await self._submission(user_id, submission_id)
         q = self._question(submission.question_id)
         if submission.ai_review is None:
+            # LLM の呼び出し (数秒〜数十秒) の間は DB のロックを持たない
+            await self.repo.db.commit()
             raw = await self.llm.complete_json(
                 cr.build_system_prompt(),
                 cr.build_user_message(
@@ -216,8 +219,10 @@ class CodingService:
                     "AI レビューの形式が不正でした。もう一度お試しください"
                 ) from e
             review = cr.apply_objective_guard(review, submission.passed)
-            submission.ai_review = review.model_dump()
-            submission.ai_reviewed_at = datetime.now(UTC)
+            submission = await self._submission(user_id, submission_id, for_update=True)
+            if submission.ai_review is None:  # 同時リクエストで先に保存されていたらそちらを使う
+                submission.ai_review = review.model_dump()
+                submission.ai_reviewed_at = datetime.now(UTC)
             await self.repo.db.commit()
         return ReviewResponse(
             submission_id=str(submission.id),
@@ -229,6 +234,8 @@ class CodingService:
 
     async def dispute(self, user_id: str, submission_id: str, reason: str) -> None:
         submission = await self._submission(user_id, submission_id, for_update=True)
+        if submission.disputed_at is not None:
+            raise ConflictError("この提出はすでに報告済みです")
         submission.dispute_reason = reason
         submission.disputed_at = datetime.now(UTC)
         await self.repo.db.commit()
@@ -239,12 +246,19 @@ class CodingService:
         self, q: CodingQuestion, code: str, tests: list[tuple[int, object]]
     ) -> list[TestResultResponse]:
         execution = q.execution
-        raw = await self.runner.run(
-            q.language,
-            code + execution.harness,
-            [RunTest(stdin=t.stdin, expected=t.expected) for _, t in tests],
-            execution.time_limit_s,
+        banned = (
+            find_forbidden_python(code, execution.forbidden_names) if q.language == "python" else []
         )
+        if banned:
+            message = f"この問題では次の名前は使えません: {', '.join(banned)}"
+            raw = [RunResult("error", "", message, 0) for _ in tests]
+        else:
+            raw = await self.runner.run(
+                q.language,
+                code + execution.harness,
+                [RunTest(stdin=t.stdin, expected=t.expected) for _, t in tests],
+                execution.time_limit_s,
+            )
         hidden_no = 0
         out: list[TestResultResponse] = []
         for (_, t), r in zip(tests, raw, strict=True):

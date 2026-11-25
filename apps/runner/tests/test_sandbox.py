@@ -191,3 +191,59 @@ def _uid_of(pid: str) -> int | None:
         return os.stat(f"/proc/{pid}").st_uid
     except FileNotFoundError:
         return None
+
+
+# ------------------------------------------------------------------ レビュー指摘の回帰テスト
+
+
+def test_files_do_not_persist_between_tests() -> None:
+    write = """
+    for path in ("/tmp/leak.txt", "/dev/shm/leak.txt"):
+        try:
+            open(path, "w").write("secret")
+        except OSError:
+            pass
+    print("ok")
+    """
+    assert run("python", write, "", "ok").status == "passed"
+    read = """
+    import os
+    print(any(os.path.exists(p) for p in ("/tmp/leak.txt", "/dev/shm/leak.txt")))
+    """
+    assert run("python", read, "", "False").status == "passed"
+
+
+def test_cannot_write_into_workdir_or_read_source_of_others() -> None:
+    code = """
+    import os
+    try:
+        open("injected.py", "w").write("x")
+        print("written")
+    except OSError:
+        print("denied")
+    """
+    assert run("python", code, "", "denied").status == "passed"
+
+
+@pytest.mark.skipif(not sandbox.isolate_uid, reason="uid 分離が有効なときのみ")
+def test_cannot_connect_to_control_socket() -> None:
+    code = """
+    import socket
+    s = socket.socket(socket.AF_UNIX)
+    try:
+        s.connect("/sock/runner.sock")
+        print("connected")
+    except OSError:
+        print("denied")
+    """
+    assert run("python", code, "", "denied").status == "passed"
+
+
+def test_node_memory_is_limited() -> None:
+    code = "const b = Buffer.alloc(300 * 1024 * 1024); console.log(b.length);"
+    assert run("javascript", code).status == "error"
+
+
+def test_wall_clock_limit_is_tight() -> None:
+    result = run("python", "import time; time.sleep(30)", limit=1)
+    assert result.status == "timeout" and result.time_ms < 2500

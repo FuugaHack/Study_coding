@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from app.core.exceptions import ConflictError, NotFoundError
+from app.content.coding import EXECUTABLE_LANGUAGES
 from app.domain import gamification as g
 from app.models.progress import ProgressStatus
 from app.repositories.attempt_repository import AttemptRepository
@@ -203,10 +204,13 @@ class CourseService:
             test_cases = content.get("test_cases", [])
             if not test_cases:
                 raise ConflictError("このレッスンにはテストケースがないため自動採点できません")
+            language = content.get("language", "python")
+            if language not in EXECUTABLE_LANGUAGES:
+                raise ConflictError(f"{language} のレッスンは自動採点に対応していません")
             if not (req.submitted_code or "").strip():
                 return False, 0
             results = await self.runner.run(
-                content.get("language", "python"),
+                language,
                 req.submitted_code,
                 [
                     RunTest(stdin=t.get("input", ""), expected=t.get("expected_output", ""))
@@ -225,4 +229,12 @@ _SECRET_CONTENT_KEYS = {"correct_index", "answer", "answers", "solution", "expla
 
 
 def public_lesson_content(content: dict) -> dict:
-    return {k: v for k, v in content.items() if k not in _SECRET_CONTENT_KEYS}
+    public = {k: v for k, v in content.items() if k not in _SECRET_CONTENT_KEYS}
+    if isinstance(public.get("test_cases"), list):
+        # 期待出力を返すとそれを print するだけで合格できるため、入力だけを返す
+        public["test_cases"] = [
+            {k: v for k, v in t.items() if k != "expected_output"}
+            for t in public["test_cases"]
+            if isinstance(t, dict)
+        ]
+    return public

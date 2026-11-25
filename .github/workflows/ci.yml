@@ -65,7 +65,8 @@ jobs:
         run: |
           docker build -t study-runner ../runner
           mkdir -p /tmp/runner-sock
-          docker run -d --name runner $RUNNER_DOCKER_FLAGS -v /tmp/runner-sock:/sock study-runner
+          # ソケットは 0660。ホストのテストプロセスが接続できるよう、そのグループを所有グループにする
+          docker run -d --name runner $RUNNER_DOCKER_FLAGS -e RUNNER_SOCKET_GID=$(id -g) -v /tmp/runner-sock:/sock study-runner
           for i in $(seq 1 30); do [ -S /tmp/runner-sock/runner.sock ] && break; sleep 1; done
           test -S /tmp/runner-sock/runner.sock
       # 既存コードには未対応の lint 違反があるため、M1 以降に追加したモジュールのみ対象 (Issue: lint 全体適用)
@@ -75,6 +76,7 @@ jobs:
           app/repositories/gamification_repository.py app/services/catalog_service.py
           app/services/gamification_service.py app/services/challenge_service.py
           app/services/coding_service.py app/services/runner_client.py app/services/llm.py
+          app/domain/code_rules.py app/api/v1/courses.py
           app/repositories/coding_repository.py
           app/schemas/catalog.py app/schemas/gamification.py app/schemas/challenge.py
           app/schemas/coding.py

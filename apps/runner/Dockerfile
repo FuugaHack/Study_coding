@@ -18,5 +18,5 @@ ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1
 
 # サーバーは root で起動するが、ユーザーコードは実行ごとに専用 uid へ setuid する
 # (必要なケーパビリティは compose 側で SETUID/SETGID/CHOWN/KILL/DAC_OVERRIDE/FOWNER のみに絞る)
-# ソケットは共有ボリューム経由で backend (別 uid の場合もある) から接続できるようにする
-CMD ["sh", "-c", "umask 0000 && exec uvicorn runner.app:app --uds /sock/runner.sock"]
+# ソケットの権限は runner/main.py で絞る (0660・グループは RUNNER_SOCKET_GID)
+CMD ["python", "-m", "runner.main"]
