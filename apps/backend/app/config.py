@@ -12,6 +12,13 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
 
+    # AI の呼び出し先: anthropic (Claude API を直接) / bedrock (Claude in Amazon Bedrock)
+    AI_PROVIDER: str = "bedrock"
+
+    # Claude API (AI_PROVIDER=anthropic のとき)
+    ANTHROPIC_API_KEY: str = ""
+    ANTHROPIC_MODEL_ID: str = "claude-opus-5-5"
+
     # AWS
     AWS_REGION: str = "ap-northeast-1"
     # Claude in Amazon Bedrock (bedrock-mantle) のモデル ID。anthropic. の接頭辞が付く
@@ -20,6 +27,9 @@ class Settings(BaseSettings):
     BEDROCK_MAX_TOKENS: int = 16000
     # 思考の深さ: low / medium / high / xhigh / max
     AI_EFFORT: str = "medium"
+    # Amazon Bedrock API キー。空なら AWS の認証情報チェーン (AWS_ACCESS_KEY_ID など) を使う。
+    # .env の値は os.environ に入らないので、ここで受けてクライアントへ明示的に渡す
+    AWS_BEARER_TOKEN_BEDROCK: str = ""
 
     # Auth
     JWT_SECRET_KEY: str = "change-me-in-production"

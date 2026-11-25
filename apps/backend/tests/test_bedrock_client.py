@@ -15,6 +15,8 @@ from app.services.llm import (
     AIOutputError,
     AIUnavailableError,
     BedrockLLMClient,
+    ClaudeLLMClient,
+    model_id,
 )
 
 
@@ -63,7 +65,7 @@ async def test_request_shape_and_text_extraction() -> None:
     assert res.text == '{"ok": true}'  # 思考ブロックは除く
     assert (res.input_tokens, res.output_tokens) == (1200, 300)
     kw = messages.kwargs
-    assert kw["model"] == settings.BEDROCK_MODEL_ID
+    assert kw["model"] == model_id()
     assert kw["output_config"] == {"effort": settings.AI_EFFORT}
     # 現行モデルはサンプリング設定を送ると 400
     assert not {"temperature", "top_p", "top_k"} & set(kw)
@@ -100,3 +102,30 @@ async def test_disabled_is_configuration_error(monkeypatch) -> None:
     with pytest.raises(AIConfigurationError):
         await llm.complete("s", "u")
     assert messages.kwargs is None
+
+
+def test_provider_switch_selects_client_and_model(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "AI_PROVIDER", "anthropic")
+    monkeypatch.setattr(settings, "ANTHROPIC_API_KEY", "sk-ant-test")
+    assert model_id() == settings.ANTHROPIC_MODEL_ID
+    assert isinstance(ClaudeLLMClient()._get_client(), anthropic.AsyncAnthropic)
+
+    monkeypatch.setattr(settings, "AI_PROVIDER", "bedrock")
+    monkeypatch.setattr(settings, "AWS_BEARER_TOKEN_BEDROCK", "bedrock-test")
+    assert model_id() == settings.BEDROCK_MODEL_ID
+    assert isinstance(ClaudeLLMClient()._get_client(), anthropic.AsyncAnthropicBedrockMantle)
+
+
+async def test_missing_anthropic_key_is_configuration_error(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "AI_PROVIDER", "anthropic")
+    monkeypatch.setattr(settings, "ANTHROPIC_API_KEY", "")
+    with pytest.raises(AIConfigurationError) as e:
+        await ClaudeLLMClient().complete("system", "user")
+    assert "ANTHROPIC_API_KEY" in e.value.reason
+
+
+def test_unknown_provider_is_configuration_error(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "AI_PROVIDER", "openai")
+    with pytest.raises(AIConfigurationError) as e:
+        model_id()
+    assert "AI_PROVIDER" in e.value.reason

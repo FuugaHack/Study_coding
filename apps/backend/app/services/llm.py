@@ -65,11 +65,26 @@ class AIConfigurationError(AIUnavailableError):
         self.reason = reason
 
 
-class BedrockLLMClient:
-    """Claude in Amazon Bedrock (bedrock-mantle エンドポイント) を Anthropic SDK で呼ぶ。
+def provider() -> str:
+    """AI の呼び出し先。anthropic (Claude API) / bedrock (Claude in Amazon Bedrock)。"""
+    value = settings.AI_PROVIDER.strip().lower()
+    if value not in ("anthropic", "bedrock"):
+        raise AIConfigurationError(f"AI_PROVIDER は anthropic か bedrock: {settings.AI_PROVIDER!r}")
+    return value
 
-    認証は SDK が解決する: AWS_BEARER_TOKEN_BEDROCK (Bedrock API キー) が優先され、
-    なければ AWS の認証情報チェーン (AWS_ACCESS_KEY_ID など) を使う。
+
+def model_id() -> str:
+    """呼び出し先に合わせたモデル ID (Bedrock は anthropic. の接頭辞付き)。"""
+    return settings.ANTHROPIC_MODEL_ID if provider() == "anthropic" else settings.BEDROCK_MODEL_ID
+
+
+class ClaudeLLMClient:
+    """Claude を Anthropic SDK で呼ぶ。呼び出し先は AI_PROVIDER で切り替える。
+
+    - anthropic: Claude API。ANTHROPIC_API_KEY を使う
+    - bedrock: Claude in Amazon Bedrock (bedrock-mantle)。AWS_BEARER_TOKEN_BEDROCK
+      (Bedrock API キー) があれば使い、なければ AWS の認証情報チェーン (AWS_ACCESS_KEY_ID など)
+    .env の値は os.environ に入らないので、キーは Settings から明示的に渡す。
     再試行はワーカーが行うので SDK の再試行は 0 回 (呼び出しごとに使用量を記録するため)。
     """
 
@@ -78,13 +93,22 @@ class BedrockLLMClient:
 
     def _get_client(self):
         if self._client is None:
-            from anthropic import AsyncAnthropicBedrockMantle
+            common = {"max_retries": 0, "timeout": settings.AI_TASK_TIMEOUT_S * 0.8}
+            if provider() == "anthropic":
+                from anthropic import AsyncAnthropic
 
-            self._client = AsyncAnthropicBedrockMantle(
-                aws_region=settings.AWS_REGION,
-                max_retries=0,
-                timeout=settings.AI_TASK_TIMEOUT_S * 0.8,
-            )
+                if not settings.ANTHROPIC_API_KEY:
+                    raise AIConfigurationError("ANTHROPIC_API_KEY が設定されていません")
+                self._client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY, **common)
+            else:
+                from anthropic import AsyncAnthropicBedrockMantle
+
+                self._client = AsyncAnthropicBedrockMantle(
+                    aws_region=settings.AWS_REGION,
+                    # None なら SDK が環境変数 / AWS の認証情報チェーンから解決する
+                    api_key=settings.AWS_BEARER_TOKEN_BEDROCK or None,
+                    **common,
+                )
         return self._client
 
     async def complete(self, system_prompt: str, user_message: str) -> LLMResponse:
@@ -96,7 +120,7 @@ class BedrockLLMClient:
             # 現行モデルは temperature などのサンプリング設定を受け付けない (400)。
             # 思考は常に有効で、深さは effort で調整する
             response = await self._get_client().messages.create(
-                model=settings.BEDROCK_MODEL_ID,
+                model=model_id(),
                 max_tokens=settings.BEDROCK_MAX_TOKENS,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_message}],
@@ -108,11 +132,16 @@ class BedrockLLMClient:
             anthropic.NotFoundError,
             anthropic.BadRequestError,
         ) as e:
-            raise AIConfigurationError(f"{type(e).__name__}: status={e.status_code}") from e
+            message = e.body.get("error", {}).get("message", "") if isinstance(e.body, dict) else ""
+            raise AIConfigurationError(
+                f"{type(e).__name__}: status={e.status_code} {str(message)[:200]}".rstrip()
+            ) from e
         except (anthropic.APIStatusError, anthropic.APIConnectionError) as e:
             # 429 / 5xx / 通信失敗: 一時的なのでワーカーが再試行する
             logger.warning("llm_call_failed", error=type(e).__name__)
             raise AIUnavailableError() from e
+        except AIConfigurationError:
+            raise
         except Exception as e:  # 認証情報が見つからない (SigV4 の署名ができない) など
             # SDK のメッセージに秘密情報は含まれない (認証情報が見つからない旨など)
             raise AIConfigurationError(f"{type(e).__name__}: {str(e)[:200]}") from e
@@ -132,11 +161,14 @@ class BedrockLLMClient:
         return LLMResponse(text, input_tokens, usage.output_tokens, response.model)
 
 
-_bedrock_client: BedrockLLMClient | None = None
+# 既存の呼び出し元・テスト向けの旧名
+BedrockLLMClient = ClaudeLLMClient
+
+_llm_client: ClaudeLLMClient | None = None
 
 
 def get_llm_client() -> LLMClient:
-    global _bedrock_client
-    if _bedrock_client is None:
-        _bedrock_client = BedrockLLMClient()
-    return _bedrock_client
+    global _llm_client
+    if _llm_client is None:
+        _llm_client = ClaudeLLMClient()
+    return _llm_client

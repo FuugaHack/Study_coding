@@ -98,14 +98,24 @@ def cmd_usage(args: argparse.Namespace) -> int:
 
 
 def cmd_ai_check(_: argparse.Namespace) -> int:
-    """Bedrock に短いリクエストを 1 回送り、認証情報とモデルの利用許可を確かめる (課金される)。"""
+    """Claude (AI_PROVIDER の呼び出し先) に短いリクエストを 1 回送る (課金される)。
+
+    認証情報とモデルの利用許可を確かめる。
+    """
     from app.config import settings
     from app.services.ai_usage import cost_usd
-    from app.services.llm import AIConfigurationError, AIUnavailableError, BedrockLLMClient
+    from app.services.llm import (
+        AIConfigurationError,
+        AIUnavailableError,
+        ClaudeLLMClient,
+        model_id,
+        provider,
+    )
 
-    _print(f"リージョン: {settings.AWS_REGION} / モデル: {settings.BEDROCK_MODEL_ID}")
     try:
-        res = asyncio.run(BedrockLLMClient().complete("1 語で答えてください。", "日本の首都は?"))
+        where = "Claude API" if provider() == "anthropic" else f"Bedrock ({settings.AWS_REGION})"
+        _print(f"呼び出し先: {where} / モデル: {model_id()}")
+        res = asyncio.run(ClaudeLLMClient().complete("1 語で答えてください。", "日本の首都は?"))
     except AIConfigurationError as e:
         _print(f"失敗 (設定の誤り): {e.reason}")
         return 1
@@ -141,7 +151,7 @@ def build_parser() -> argparse.ArgumentParser:
     dismiss.add_argument("--note", required=True)
     dismiss.set_defaults(func=cmd_dismiss)
 
-    ai = sub.add_parser("ai", help="AI (Bedrock) の接続確認")
+    ai = sub.add_parser("ai", help="AI (Claude API / Bedrock) の接続確認")
     ai.add_subparsers(dest="command", required=True).add_parser(
         "check", help="短いリクエストを 1 回送る (課金される)"
     ).set_defaults(func=cmd_ai_check)
