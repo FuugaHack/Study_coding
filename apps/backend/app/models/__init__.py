@@ -3,6 +3,8 @@ from app.models.base import Base
 from app.models.course import Course, CourseLevel
 from app.models.gamification import (
     ChallengeSession,
+    CodingProgress,
+    CodingSubmission,
     CourseAchievement,
     QuestionAttempt,
     UserBadge,
@@ -48,4 +50,6 @@ __all__ = [
     "UserBadge",
     "CourseAchievement",
     "ChallengeSession",
+    "CodingProgress",
+    "CodingSubmission",
 ]

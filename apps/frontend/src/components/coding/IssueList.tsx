@@ -1,25 +1,24 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
+import type { CodingIssueSummary, CodingRepositorySummary } from "@learning-platform/shared-types";
+import { listCodingIssues } from "@/api/coding";
+import { ErrorState, LoadingState } from "@/components/common/LoadingState";
+import { getErrorMessage } from "@/lib/api";
 import {
-  CODING_QUESTIONS,
   DIFFICULTY_LABEL,
-  FRAMEWORK_LABEL,
   ISSUE_STATUS_LABEL,
-  LANGUAGE_ICON,
-  LANGUAGE_LABEL,
-  QUESTION_TYPE_LABEL,
-} from "@/data/codingCatalog";
-import type {
-  CodingDifficulty,
-  CodingQuestion,
-  CodingRepository,
-  IssueStatus,
-} from "@/types/coding";
+  frameworkLabel,
+  languageIcon,
+  languageLabel,
+  questionTypeLabel,
+} from "@/lib/codingLabels";
+import type { CodingDifficulty, IssueStatus } from "@/types/coding";
 
 type Props = {
-  repository: CodingRepository;
+  repository: CodingRepositorySummary;
   onBack: () => void;
-  onSelect: (question: CodingQuestion) => void;
+  onSelect: (issue: CodingIssueSummary) => void;
 };
 
 const STATUS_FILTER_OPTIONS: Array<IssueStatus | "all"> = [
@@ -59,13 +58,11 @@ export function IssueList({ repository, onBack, onSelect }: Props) {
   const [difficulty, setDifficulty] = useState<CodingDifficulty | "all">("all");
   const [search, setSearch] = useState("");
 
-  const issues = useMemo(
-    () =>
-      CODING_QUESTIONS.filter((q) => q.repositoryId === repository.id).sort(
-        (a, b) => a.issueNumber - b.issueNumber,
-      ),
-    [repository.id],
-  );
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["coding", "issues", repository.id],
+    queryFn: () => listCodingIssues(repository.id),
+  });
+  const issues = useMemo(() => data?.issues ?? [], [data]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -82,6 +79,9 @@ export function IssueList({ repository, onBack, onSelect }: Props) {
 
   const openCount = issues.filter((i) => i.status === "open").length;
   const solvedCount = issues.filter((i) => i.status === "solved").length;
+
+  if (isLoading) return <LoadingState />;
+  if (error) return <ErrorState message={getErrorMessage(error)} />;
 
   return (
     <div className="-mx-4 -my-6 min-h-[calc(100vh-3.5rem)] bg-[#0d1117] text-slate-200">
@@ -105,17 +105,17 @@ export function IssueList({ repository, onBack, onSelect }: Props) {
           style={{ animationDelay: "60ms" }}
         >
           <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
-            <span>{LANGUAGE_ICON[repository.language]}</span>
+            <span>{languageIcon(repository.language)}</span>
             {repository.name}
           </h1>
           <p className="mt-1 text-sm text-slate-400">{repository.description}</p>
           <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
-            <span>Language: {LANGUAGE_LABEL[repository.language]}</span>
+            <span>Language: {languageLabel(repository.language)}</span>
             {repository.framework && (
-              <span>Framework: {FRAMEWORK_LABEL[repository.framework]}</span>
+              <span>Framework: {frameworkLabel(repository.framework)}</span>
             )}
             <span>Issues: {issues.length}</span>
-            <span>Difficulty: {repository.difficultyRange}</span>
+            <span>Difficulty: {repository.difficulty_range}</span>
           </div>
         </header>
 
@@ -182,7 +182,7 @@ export function IssueList({ repository, onBack, onSelect }: Props) {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-[11px] text-slate-500">
-                        #{String(it.issueNumber).padStart(3, "0")}
+                        #{String(it.issue_number).padStart(3, "0")}
                       </span>
                       <span className="text-sm font-semibold text-slate-100 group-hover:text-indigo-300 group-hover:underline">
                         {it.title}
@@ -207,8 +207,17 @@ export function IssueList({ repository, onBack, onSelect }: Props) {
                         {DIFFICULTY_LABEL[it.difficulty]}
                       </span>
                       <span className="rounded-full bg-slate-700/60 px-1.5 py-0.5 text-slate-300">
-                        {QUESTION_TYPE_LABEL[it.type]}
+                        {questionTypeLabel(it.type)}
                       </span>
+                      {it.executable ? (
+                        <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-emerald-300">
+                          ▶ 自動採点
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-slate-700/60 px-1.5 py-0.5 text-slate-400">
+                          AI レビューのみ
+                        </span>
+                      )}
                       {it.tags.slice(0, 4).map((t) => (
                         <span
                           key={t}
@@ -221,7 +230,7 @@ export function IssueList({ repository, onBack, onSelect }: Props) {
                   </div>
                   <div className="text-right text-[11px] text-slate-500">
                     <div>Estimated</div>
-                    <div className="font-mono text-slate-300">{it.estimatedMinutes} min</div>
+                    <div className="font-mono text-slate-300">{it.estimated_minutes} min</div>
                   </div>
                 </div>
               </button>

@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.core.rate_limit import rate_limit_runner, runner_slot
 from app.core.security import get_current_user_id
 from app.dependencies import get_course_service
 from app.schemas.course import CourseListResponse
@@ -68,4 +69,7 @@ async def submit_lesson(
     service: CourseService = Depends(get_course_service),
 ):
     _ensure_uuid_or_404(lesson_id, "レッスン")
-    return await service.submit_lesson(user_id, lesson_id, req)
+    # コーディングレッスンはランナーで採点するため、コーディング問題と同じ制限をかける
+    await rate_limit_runner(user_id)
+    async with runner_slot(user_id):
+        return await service.submit_lesson(user_id, lesson_id, req)

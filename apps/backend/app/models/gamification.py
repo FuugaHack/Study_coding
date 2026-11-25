@@ -15,6 +15,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
+    Text,
     UniqueConstraint,
     func,
 )
@@ -131,3 +132,47 @@ class ChallengeSession(UUIDPrimaryKeyMixin, Base):
     )
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class CodingProgress(Base):
+    """コーディング問題ごとの進捗: 開いたヒントの数・解答例を見たか・正解日時。"""
+
+    __tablename__ = "coding_progress"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    question_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    hints_revealed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    solutions_viewed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    solved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
+class CodingSubmission(UUIDPrimaryKeyMixin, Base):
+    """コーディング問題の提出。テスト結果 (客観判定) と AI レビュー (補助) を保存する。"""
+
+    __tablename__ = "coding_submissions"
+    __table_args__ = (Index("ix_coding_submissions_user_question", "user_id", "question_id"),)
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    question_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    code: Mapped[str] = mapped_column(Text, nullable=False)
+    # 自動テスト非対応の問題は NULL
+    passed: Mapped[bool | None] = mapped_column(Boolean)
+    passed_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    total_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    hints_used: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    results: Mapped[list] = mapped_column(JSONB, default=list, nullable=False)
+    content_version: Mapped[str] = mapped_column(String(20), nullable=False)
+    ai_review: Mapped[dict | None] = mapped_column(JSONB)
+    ai_reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    dispute_reason: Mapped[str | None] = mapped_column(Text)
+    disputed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

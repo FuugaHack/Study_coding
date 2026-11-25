@@ -1,3 +1,6 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 import redis.asyncio as redis
 
 from app.config import settings
@@ -36,3 +39,30 @@ async def rate_limit_ai(user_id: str) -> None:
         raise RateLimitError(
             f"AI機能のリクエスト上限に達しました（{settings.AI_RATE_LIMIT_PER_HOUR}回/時間）"
         )
+
+
+async def rate_limit_runner(user_id: str) -> None:
+    """コード実行 (実行・提出) のレート制限。"""
+    r = await get_redis()
+    key = f"ratelimit:runner:{user_id}:minute"
+    count = await r.incr(key)
+    if count == 1:
+        await r.expire(key, 60)
+    if count > settings.RUNNER_RATE_LIMIT_PER_MINUTE:
+        raise RateLimitError(
+            f"コード実行の上限に達しました（{settings.RUNNER_RATE_LIMIT_PER_MINUTE}回/分）"
+        )
+
+
+@asynccontextmanager
+async def runner_slot(user_id: str) -> AsyncIterator[None]:
+    """同じユーザーのコード実行は同時に 1 つまで (実行環境を 1 人で占有させない)。"""
+    r = await get_redis()
+    key = f"runner:busy:{user_id}"
+    # 異常終了してもロックが残り続けないよう、実行の最大時間より長い期限を付ける
+    if not await r.set(key, "1", nx=True, ex=120):
+        raise RateLimitError("前のコード実行が終わるまで待ってからもう一度お試しください")
+    try:
+        yield
+    finally:
+        await r.delete(key)
