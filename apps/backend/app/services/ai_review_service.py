@@ -1,10 +1,9 @@
-import uuid
-from datetime import datetime, timezone
-
-from app.core.exceptions import AIServiceError, NotFoundError
+from app.core.exceptions import NotFoundError
 from app.repositories.problem_repository import ProblemRepository
-from app.services.bedrock_service import BedrockService
+from app.services.ai_usage import check_budget
+from app.worker import queue
 
+TASK_TYPE = "ai_review"
 
 REVIEW_SYSTEM_PROMPT = """あなたはプログラミング教育の専門家です。
 学習者のレベル: {level}
@@ -23,8 +22,7 @@ REVIEW_SYSTEM_PROMPT = """あなたはプログラミング教育の専門家で
 
 
 class AIReviewService:
-    def __init__(self, bedrock: BedrockService, problem_repo: ProblemRepository):
-        self.bedrock = bedrock
+    def __init__(self, problem_repo: ProblemRepository):
         self.problem_repo = problem_repo
 
     async def request_review(
@@ -35,12 +33,12 @@ class AIReviewService:
         language: str = "python",
         user_level: str = "beginner",
     ) -> str:
-        """レビューを非同期で開始し、task_idを返す"""
-        task_id = str(uuid.uuid4())
-        await self.problem_repo.create_async_task(
-            task_id=task_id,
+        """レビューをワーカーに登録し、task_id を返す (LLM はここでは呼ばない)。"""
+        await check_budget(self.problem_repo.db, user_id)
+        task = await queue.enqueue(
+            self.problem_repo.db,
+            task_type=TASK_TYPE,
             user_id=user_id,
-            task_type="ai_review",
             input_data={
                 "code": code,
                 "problem_description": problem_description,
@@ -48,48 +46,9 @@ class AIReviewService:
                 "user_level": user_level,
             },
         )
-
-        # レビュー実行（本番ではSQSワーカーで処理）
-        await self._execute_review(task_id, code, problem_description, language, user_level)
-        return task_id
-
-    async def _execute_review(
-        self,
-        task_id: str,
-        code: str,
-        problem_description: str,
-        language: str,
-        user_level: str,
-    ) -> None:
-        try:
-            await self.problem_repo.update_task_status(task_id, "processing")
-
-            system_prompt = REVIEW_SYSTEM_PROMPT.format(level=user_level, language=language)
-            user_message = f"""## 問題
-{problem_description}
-
-## 提出コード ({language})
-```{language}
-{code}
-```"""
-
-            review = await self.bedrock.invoke(
-                system_prompt=system_prompt,
-                user_message=user_message,
-                temperature=0.3,
-            )
-
-            await self.problem_repo.update_task_result(
-                task_id=task_id,
-                status="completed",
-                result_data={"review": review},
-            )
-        except Exception as e:
-            await self.problem_repo.update_task_result(
-                task_id=task_id,
-                status="failed",
-                error_message=str(e),
-            )
+        # レスポンスより前にコミットする (直後のポーリングで 404 にならないように)
+        await self.problem_repo.db.commit()
+        return str(task.id)
 
     async def get_review_result(self, task_id: str, user_id: str) -> dict:
         task = await self.problem_repo.get_async_task(task_id, user_id)
@@ -106,3 +65,21 @@ class AIReviewService:
             result["error_message"] = task.error_message
 
         return result
+
+
+async def run_ai_review_task(ctx) -> dict:
+    """自由入力コードの AI レビュー (ワーカーで実行)。"""
+    data = ctx.task.input_data
+    language = data.get("language", "python")
+    system_prompt = REVIEW_SYSTEM_PROMPT.format(
+        level=data.get("user_level", "beginner"), language=language
+    )
+    user_message = f"""## 問題
+{data.get("problem_description", "")}
+
+## 提出コード ({language})
+```{language}
+{data.get("code", "")}
+```"""
+    response = await ctx.complete(TASK_TYPE, system_prompt, user_message)
+    return {"review": response.text}

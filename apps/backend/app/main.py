@@ -1,4 +1,3 @@
-import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -6,18 +5,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 from app.config import settings
+from app.core.logging import configure_logging, get_logger
 from app.core.middleware import RequestLoggingMiddleware, SecurityHeadersMiddleware
 from app.db.session import engine
 
-logging.basicConfig(level=logging.INFO)
+configure_logging()
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logging.info("Application starting up")
+    logger.info("startup")
     yield
     await engine.dispose()
-    logging.info("Application shut down")
+    logger.info("shutdown")
 
 
 app = FastAPI(

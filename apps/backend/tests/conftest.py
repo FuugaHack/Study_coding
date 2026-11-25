@@ -16,6 +16,9 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
+# テストは開発用とは別の Redis DB 番号を使う (app.config の読み込みより前に設定する)
+os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://redis:6379/15")
+
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL",
     "postgresql+asyncpg://postgres:password@db:5432/learning_platform_test",
@@ -96,3 +99,17 @@ async def auth_client(client: AsyncClient) -> AsyncClient:
     assert res.status_code == 201, res.text
     client.headers["Authorization"] = f"Bearer {res.json()['access_token']}"
     return client
+
+
+@pytest.fixture(autouse=True)
+async def _fresh_redis_pool():
+    """テストごとにイベントループが変わるため、ループに紐づく Redis 接続を作り直す。"""
+    from app.core import rate_limit
+
+    rate_limit._pool = None
+    yield
+    if rate_limit._pool is not None:
+        # 同じ Redis を共有するテスト間でレート制限のカウントが残らないようにする
+        await rate_limit._pool.flushdb()
+        await rate_limit._pool.aclose()
+        rate_limit._pool = None

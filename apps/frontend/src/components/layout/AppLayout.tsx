@@ -8,14 +8,16 @@ import { RewardToaster } from "@/components/gamification/RewardToaster";
 type NavItem = {
   to: string;
   label: string;
-  /** コーディングメニュー専用: AI予定バッジを表示 */
+  /** コーディングメニュー専用: AI バッジを表示 */
   withAiBadge?: boolean;
 };
 
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "ダッシュボード" },
+  { to: "/map", label: "マップ" },
   { to: "/courses", label: "コース" },
   { to: "/practice", label: "コーディング", withAiBadge: true },
+  { to: "/achievements", label: "実績" },
   // 「履歴」はメニューから非表示 (ルートは保持)
 ];
 
@@ -55,8 +57,8 @@ export function AppLayout() {
                 <span>{n.label}</span>
                 {n.withAiBadge && (
                   <span
-                    aria-label="AIレビュー予定"
-                    title="AIレビュー予定"
+                    aria-label="AIレビュー対応"
+                    title="AIレビュー対応"
                     className="rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white shadow-sm motion-safe:animate-pulse-soft"
                   >
                     AI

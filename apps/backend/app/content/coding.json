@@ -1,0 +1,2093 @@
+{
+  "schema_version": 1,
+  "repositories": [
+    {
+      "id": "repo-ts-react",
+      "name": "TypeScript / React",
+      "description": "Reactコンポーネント、Hooks、状態管理を実装ベースで学ぶ。",
+      "language": "typescript",
+      "framework": "react",
+      "tags": [
+        "Hooks",
+        "State",
+        "Components"
+      ],
+      "difficulty_range": "初級〜中級",
+      "status": "active"
+    },
+    {
+      "id": "repo-ts-next",
+      "name": "TypeScript / Next.js",
+      "description": "App Router / Server Component / API Routes の基本を扱う。",
+      "language": "typescript",
+      "framework": "next",
+      "tags": [
+        "App Router",
+        "RSC",
+        "API Routes"
+      ],
+      "difficulty_range": "中級",
+      "status": "active"
+    },
+    {
+      "id": "repo-ts",
+      "name": "TypeScript",
+      "description": "Generics / Union / 型推論など、フレームワーク非依存の型システム演習。",
+      "language": "typescript",
+      "framework": null,
+      "tags": [
+        "Generics",
+        "Union",
+        "型推論"
+      ],
+      "difficulty_range": "初級〜中級",
+      "status": "active"
+    },
+    {
+      "id": "repo-js",
+      "name": "JavaScript",
+      "description": "配列操作・非同期・イベントなどモダン JS の基礎演習。",
+      "language": "javascript",
+      "framework": null,
+      "tags": [
+        "配列",
+        "Promise",
+        "DOM"
+      ],
+      "difficulty_range": "初級〜中級",
+      "status": "active"
+    },
+    {
+      "id": "repo-py-fastapi",
+      "name": "Python / FastAPI",
+      "description": "API設計、Pydantic、依存性注入、ルーティングを実装で学ぶ。",
+      "language": "python",
+      "framework": "fastapi",
+      "tags": [
+        "REST",
+        "Pydantic",
+        "Depends"
+      ],
+      "difficulty_range": "初級〜中級",
+      "status": "active"
+    },
+    {
+      "id": "repo-py-django",
+      "name": "Python / Django",
+      "description": "MVT パターン、ORM、URLルーティングなど Django の基本。",
+      "language": "python",
+      "framework": "django",
+      "tags": [
+        "MVT",
+        "ORM"
+      ],
+      "difficulty_range": "初級〜中級",
+      "status": "wip"
+    },
+    {
+      "id": "repo-py",
+      "name": "Python",
+      "description": "型ヒント・内包表記・クラスなど、Pythonの基本要素を扱う。",
+      "language": "python",
+      "framework": null,
+      "tags": [
+        "型ヒント",
+        "内包表記",
+        "OOP"
+      ],
+      "difficulty_range": "初級",
+      "status": "active"
+    },
+    {
+      "id": "repo-sql-postgres",
+      "name": "SQL / PostgreSQL",
+      "description": "SELECT / JOIN / GROUP BY など、SQLの基本を実問題で学ぶ。",
+      "language": "sql",
+      "framework": "postgres",
+      "tags": [
+        "SELECT",
+        "JOIN",
+        "GROUP BY"
+      ],
+      "difficulty_range": "初級〜中級",
+      "status": "active"
+    },
+    {
+      "id": "repo-html-tailwind",
+      "name": "HTML / Tailwind CSS",
+      "description": "Tailwind を使った高速な UI 実装を体験する。",
+      "language": "html",
+      "framework": "tailwind",
+      "tags": [
+        "Tailwind",
+        "Flex",
+        "Responsive"
+      ],
+      "difficulty_range": "初級",
+      "status": "active"
+    },
+    {
+      "id": "repo-html",
+      "name": "HTML / CSS",
+      "description": "セマンティックHTMLとCSSのレイアウト基礎。",
+      "language": "html",
+      "framework": null,
+      "tags": [
+        "Semantic",
+        "Flexbox"
+      ],
+      "difficulty_range": "初級",
+      "status": "active"
+    },
+    {
+      "id": "repo-node-express",
+      "name": "JavaScript / Express",
+      "description": "Node.js + Express で REST API を実装する基礎。",
+      "language": "javascript",
+      "framework": "express",
+      "tags": [
+        "Node.js",
+        "Express",
+        "REST"
+      ],
+      "difficulty_range": "初級〜中級",
+      "status": "wip"
+    },
+    {
+      "id": "repo-vue-nuxt",
+      "name": "TypeScript / Vue (Nuxt)",
+      "description": "Vue Composition API と Nuxt の基本(WIP)。",
+      "language": "typescript",
+      "framework": "vue",
+      "tags": [
+        "Vue",
+        "Nuxt"
+      ],
+      "difficulty_range": "中級",
+      "status": "wip"
+    },
+    {
+      "id": "repo-go-gin",
+      "name": "Go / Gin",
+      "description": "Go と Gin で HTTP サーバーを書く基本(WIP)。",
+      "language": "go",
+      "framework": "gin",
+      "tags": [
+        "Go",
+        "Gin",
+        "HTTP"
+      ],
+      "difficulty_range": "中級",
+      "status": "wip"
+    },
+    {
+      "id": "repo-java-spring",
+      "name": "Java / Spring Boot",
+      "description": "Spring Boot で REST API を書く基本(WIP)。",
+      "language": "java",
+      "framework": "spring-boot",
+      "tags": [
+        "Spring Boot",
+        "DI",
+        "REST"
+      ],
+      "difficulty_range": "中級〜上級",
+      "status": "wip"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-react-usestate-fill",
+      "repository_id": "repo-ts-react",
+      "issue_number": 1,
+      "title": "useState を使ってカウントアップを実装しよう",
+      "description": "useState を使って、ボタンを押すたびに数値が増えるカウンターを完成させてください。空欄に入る Hook 名を埋めてください。",
+      "language": "typescript",
+      "framework": "react",
+      "difficulty": "easy",
+      "type": "fill-blank",
+      "initial_code": "import { useState } from \"react\";\n\nexport function Counter() {\n  const [count, setCount] = ______(0);\n  return (\n    <button onClick={() => setCount(count + 1)}>\n      Count: {count}\n    </button>\n  );\n}\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "React",
+        "useState",
+        "初級",
+        "穴埋め"
+      ],
+      "explanation": "React で状態を持つには `useState` を使います。返り値は [現在値, 更新関数] のタプル。更新関数を呼ぶと再レンダリングが起き、UI が新しい値で描画されます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "状態が変わる値を扱うときは、Reactでは通常の変数ではなく専用の仕組みを使います。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "空欄になっている `______(0)` の部分に、Reactの状態管理Hookを入れる必要があります。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "Reactで状態を管理するには `useState` を使います。初期値は `0` にします。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "`const [count, setCount] = useState(0);` の形を思い出してください。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "空欄には `useState` が入ります。つまり `______(0)` は `useState(0)` になります。",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "sol-usestate-recommended",
+          "title": "実務でよく使う基本的な書き方",
+          "code": "import { useState } from \"react\";\n\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return (\n    <button onClick={() => setCount(count + 1)}>\n      Count: {count}\n    </button>\n  );\n}",
+          "explanation": "useState で状態を持ち、onClick で setCount を呼んで状態を更新する基本形。",
+          "points": [
+            "状態の宣言と更新のセット",
+            "イベントハンドラから状態更新"
+          ],
+          "is_recommended": true
+        },
+        {
+          "id": "sol-usestate-functional",
+          "title": "関数型更新を使った書き方",
+          "code": "import { useState } from \"react\";\n\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return (\n    <button onClick={() => setCount((c) => c + 1)}>\n      Count: {count}\n    </button>\n  );\n}",
+          "explanation": "setCount に前回値を受け取る関数を渡す書き方。連続更新やバッチ更新で安全。",
+          "points": [
+            "前回値ベースで更新",
+            "クロージャ問題を避けやすい"
+          ],
+          "is_recommended": false
+        },
+        {
+          "id": "sol-usestate-extract",
+          "title": "ハンドラを切り出した実務寄りの書き方",
+          "code": "import { useState } from \"react\";\n\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  const handleClick = () => setCount((c) => c + 1);\n  return <button onClick={handleClick}>Count: {count}</button>;\n}",
+          "explanation": "ハンドラを変数に切り出すと再レンダリングごとの関数生成を抑えやすく、テストもしやすい。",
+          "points": [
+            "責務分離",
+            "テスト容易性"
+          ],
+          "is_recommended": false
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-react-props",
+      "repository_id": "repo-ts-react",
+      "issue_number": 2,
+      "title": "props を使ってコンポーネントに値を渡そう",
+      "description": "親から子コンポーネントに name を渡し、`Hello, {name}!` と表示できるよう Greet を実装してください。",
+      "language": "typescript",
+      "framework": "react",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "type GreetProps = { /* TODO */ };\n\nexport function Greet(/* TODO */) {\n  return <div>{/* TODO */}</div>;\n}\n",
+      "estimated_minutes": 15,
+      "tags": [
+        "React",
+        "props",
+        "初級",
+        "実装問題"
+      ],
+      "explanation": "この問題は React / props / 初級 / 実装問題 の理解度を確認します。props を使ってコンポーネントに値を渡そう を解くことで「React」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "React の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "props を使ってコンポーネントに値を渡そう の核心は「React / props / 初級 / 実装問題」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "React の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\ntype GreetProps = { name: string };\n\nexport function Greet({ name }: GreetProps) {\n  return <div>Hello, {name}!</div>;\n} ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-react-props-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "type GreetProps = { name: string };\n\nexport function Greet({ name }: GreetProps) {\n  return <div>Hello, {name}!</div>;\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-react-useeffect",
+      "repository_id": "repo-ts-react",
+      "issue_number": 3,
+      "title": "useEffect でマウント時に1回だけ実行する",
+      "description": "コンポーネントのマウント時にだけ `console.log` を呼ぶ useEffect の依存配列を埋めてください。",
+      "language": "typescript",
+      "framework": "react",
+      "difficulty": "easy",
+      "type": "fill-blank",
+      "initial_code": "import { useEffect } from \"react\";\n\nexport function Logger() {\n  useEffect(() => {\n    console.log(\"mounted\");\n  }, /* TODO */);\n  return null;\n}\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "React",
+        "useEffect",
+        "初級",
+        "穴埋め"
+      ],
+      "explanation": "この問題は React / useEffect / 初級 / 穴埋め の理解度を確認します。useEffect でマウント時に1回だけ実行する を解くことで「React」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "React の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "useEffect でマウント時に1回だけ実行する の核心は「React / useEffect / 初級 / 穴埋め」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "React の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nimport { useEffect } from \"react\";\n\nexport function Logger() {\n  useEffect(() => {\n    console.log(\"mounted\");\n  }, []); ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-react-useeffect-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "import { useEffect } from \"react\";\n\nexport function Logger() {\n  useEffect(() => {\n    console.log(\"mounted\");\n  }, []);\n  return null;\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-next-link",
+      "repository_id": "repo-ts-next",
+      "issue_number": 1,
+      "title": "Next.js Link を使ったクライアント遷移",
+      "description": "Next.js でクライアントサイド遷移を行う Link コンポーネントを使い、'/about' へのリンクを実装してください。",
+      "language": "typescript",
+      "framework": "next",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "// TODO: next/link をインポート\nexport default function Home() {\n  return <a href=\"/about\">About</a>;\n}\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "Next.js",
+        "Link",
+        "初級"
+      ],
+      "explanation": "この問題は Next.js / Link / 初級 の理解度を確認します。Next.js Link を使ったクライアント遷移 を解くことで「Next.js」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "Next.js の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Next.js Link を使ったクライアント遷移 の核心は「Next.js / Link / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "Next.js の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nimport Link from \"next/link\";\n\nexport default function Home() {\n  return <Link href=\"/about\">About</Link>;\n}\n",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-next-link-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "import Link from \"next/link\";\n\nexport default function Home() {\n  return <Link href=\"/about\">About</Link>;\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-ts-generic-first",
+      "repository_id": "repo-ts",
+      "issue_number": 1,
+      "title": "Generics で型安全な first<T> を実装",
+      "description": "任意の型 T の配列を受け取り、先頭の要素を返す型安全な関数 first<T> を実装してください。空の配列なら undefined を返します。any は使わないでください (型の正しさは AI レビューで確認します)。",
+      "language": "typescript",
+      "framework": null,
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "function first(arr: any[]): any {\n  // TODO: 型引数 <T> を使って、先頭の要素を型安全に返そう\n}\n",
+      "estimated_minutes": 12,
+      "tags": [
+        "TypeScript",
+        "Generics",
+        "初級"
+      ],
+      "explanation": "この問題は TypeScript / Generics / 初級 の理解度を確認します。Generics で型安全な first<T> を実装 を解くことで「TypeScript」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "ジェネリクスを使うと「受け取った型をそのまま返す」ことを型で表せます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "関数名の後ろに <T> を付け、引数を T[] にしましょう。空の配列も考えると戻り値の型は?",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "function first<T>(arr: T[]): T | undefined { return arr[0]; }",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-ts-generic-first-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "function first<T>(arr: T[]): T | undefined {\n  return arr[0];\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n// ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nconst __args: any[] = JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"));\nconst __log = console.log;\nconsole.log = (...a: unknown[]) => console.error(...a); // console.log でのデバッグ出力は stderr に回す\nconst __result = first(...__args);\nconsole.log = __log;\nconsole.log(__result === undefined ? \"undefined\" : JSON.stringify(__result));\n",
+        "tests": [
+          {
+            "name": "数値の配列",
+            "stdin": "[[7, 8]]",
+            "expected": "7",
+            "hidden": false
+          },
+          {
+            "name": "文字列の配列",
+            "stdin": "[[\"x\", \"y\"]]",
+            "expected": "\"x\"",
+            "hidden": false
+          },
+          {
+            "name": "空の配列",
+            "stdin": "[[]]",
+            "expected": "undefined",
+            "hidden": true
+          },
+          {
+            "name": "null が先頭",
+            "stdin": "[[null, 1]]",
+            "expected": "null",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "function first<T>(arr: T[]): T | undefined {\n  return arr[0];\n}\n"
+      }
+    },
+    {
+      "id": "q-ts-discriminated-union",
+      "repository_id": "repo-ts",
+      "issue_number": 2,
+      "title": "判別可能な Union 型で結果を扱う",
+      "description": "result.kind に応じて分岐する handleResult を実装してください。ok なら「OK: {value}」、error なら「Error: {message}」を返します。switch を使うと TypeScript が網羅性をチェックしてくれます。",
+      "language": "typescript",
+      "framework": null,
+      "difficulty": "normal",
+      "type": "implementation",
+      "initial_code": "type Result =\n  | { kind: \"ok\"; value: number }\n  | { kind: \"error\"; message: string };\n\nfunction handleResult(result: Result): string {\n  // TODO\n  return \"\";\n}\n",
+      "estimated_minutes": 15,
+      "tags": [
+        "TypeScript",
+        "Union",
+        "中級"
+      ],
+      "explanation": "この問題は TypeScript / Union / 中級 の理解度を確認します。判別可能な Union 型で結果を扱う を解くことで「TypeScript」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "kind のように「どの形か」を表す共通のプロパティを判別子と呼びます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "switch (result.kind) で分岐すると、各 case の中で result の型が自動で絞り込まれます。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "case \"ok\": では result.value、case \"error\": では result.message が使えます。テンプレートリテラルで組み立てましょう。",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-ts-discriminated-union-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "type Result =\n  | { kind: \"ok\"; value: number }\n  | { kind: \"error\"; message: string };\n\nfunction handleResult(result: Result): string {\n  switch (result.kind) {\n    case \"ok\":\n      return `OK: ${result.value}`;\n    case \"error\":\n      return `Error: ${result.message}`;\n  }\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n// ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nconst __args: [Result] = JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"));\nconst __log = console.log;\nconsole.log = (...a: unknown[]) => console.error(...a); // console.log でのデバッグ出力は stderr に回す\nconst __result = handleResult(...__args);\nconsole.log = __log;\nconsole.log(__result === undefined ? \"undefined\" : JSON.stringify(__result));\n",
+        "tests": [
+          {
+            "name": "ok",
+            "stdin": "[{\"kind\": \"ok\", \"value\": 42}]",
+            "expected": "\"OK: 42\"",
+            "hidden": false
+          },
+          {
+            "name": "error",
+            "stdin": "[{\"kind\": \"error\", \"message\": \"boom\"}]",
+            "expected": "\"Error: boom\"",
+            "hidden": false
+          },
+          {
+            "name": "value が 0",
+            "stdin": "[{\"kind\": \"ok\", \"value\": 0}]",
+            "expected": "\"OK: 0\"",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "type Result =\n  | { kind: \"ok\"; value: number }\n  | { kind: \"error\"; message: string };\n\nfunction handleResult(result: Result): string {\n  switch (result.kind) {\n    case \"ok\":\n      return `OK: ${result.value}`;\n    case \"error\":\n      return `Error: ${result.message}`;\n  }\n}\n"
+      }
+    },
+    {
+      "id": "q-js-fizzbuzz",
+      "repository_id": "repo-js",
+      "issue_number": 1,
+      "title": "FizzBuzz を実装する",
+      "description": "1 から n までの数を 1 行ずつ console.log で出力する fizzBuzz(n) を実装してください。3 の倍数は Fizz、5 の倍数は Buzz、両方の倍数は FizzBuzz を出力します。",
+      "language": "javascript",
+      "framework": null,
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "function fizzBuzz(n) {\n  for (let i = 1; i <= n; i++) {\n    // TODO\n  }\n}\n",
+      "estimated_minutes": 12,
+      "tags": [
+        "JavaScript",
+        "loop",
+        "条件分岐",
+        "初級"
+      ],
+      "explanation": "この問題は JavaScript / loop / 条件分岐 / 初級 の理解度を確認します。FizzBuzz を実装する を解くことで「JavaScript」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "「割り切れるか」は余り (%) が 0 かどうかで判定できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "条件を判定する順番が大事です。3 と 5 の両方の倍数 (15 の倍数) を最初に判定しましょう。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "if (i % 15 === 0) → else if (i % 3 === 0) → else if (i % 5 === 0) → else の順で console.log します。",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-js-fizzbuzz-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "function fizzBuzz(n) {\n  for (let i = 1; i <= n; i++) {\n    if (i % 15 === 0) console.log(\"FizzBuzz\");\n    else if (i % 3 === 0) console.log(\"Fizz\");\n    else if (i % 5 === 0) console.log(\"Buzz\");\n    else console.log(i);\n  }\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n// ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nfizzBuzz(JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"))[0]);\n",
+        "tests": [
+          {
+            "name": "n = 15",
+            "stdin": "[15]",
+            "expected": "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz",
+            "hidden": false
+          },
+          {
+            "name": "n = 5",
+            "stdin": "[5]",
+            "expected": "1\n2\nFizz\n4\nBuzz",
+            "hidden": false
+          },
+          {
+            "name": "n = 0 (何も出力しない)",
+            "stdin": "[0]",
+            "expected": "",
+            "hidden": true
+          },
+          {
+            "name": "n = 30 の末尾",
+            "stdin": "[30]",
+            "expected": "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz\n16\n17\nFizz\n19\nBuzz\nFizz\n22\n23\nFizz\nBuzz\n26\nFizz\n28\n29\nFizzBuzz",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "function fizzBuzz(n) {\n  for (let i = 1; i <= n; i++) {\n    if (i % 15 === 0) console.log(\"FizzBuzz\");\n    else if (i % 3 === 0) console.log(\"Fizz\");\n    else if (i % 5 === 0) console.log(\"Buzz\");\n    else console.log(i);\n  }\n}\n"
+      }
+    },
+    {
+      "id": "q-js-unique",
+      "repository_id": "repo-js",
+      "issue_number": 2,
+      "title": "配列の重複を除去する unique を実装",
+      "description": "配列を受け取り、重複を取り除いた新しい配列を返す unique を実装してください。要素の順番は最初に現れた順を保ちます。",
+      "language": "javascript",
+      "framework": null,
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "function unique(arr) {\n  // TODO\n  return arr;\n}\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "JavaScript",
+        "Set",
+        "配列",
+        "初級"
+      ],
+      "explanation": "この問題は JavaScript / Set / 配列 / 初級 の理解度を確認します。配列の重複を除去する unique を実装 を解くことで「JavaScript」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "「重複を許さない集合」を表す組み込みのデータ構造があります。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "Set は追加した順番を保ちます。配列から Set を作り、配列に戻しましょう。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "スプレッド構文で [...new Set(arr)] と書けます。",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-js-unique-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "function unique(arr) {\n  return [...new Set(arr)];\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n// ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nconst __args = JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"));\nconst __log = console.log;\nconsole.log = (...a) => console.error(...a); // console.log でのデバッグ出力は stderr に回す\nconst __result = unique(...__args);\nconsole.log = __log;\nconsole.log(__result === undefined ? \"undefined\" : JSON.stringify(__result));\n",
+        "tests": [
+          {
+            "name": "基本: 数値",
+            "stdin": "[[1, 2, 2, 3, 3, 3, 4]]",
+            "expected": "[1,2,3,4]",
+            "hidden": false
+          },
+          {
+            "name": "文字列",
+            "stdin": "[[\"a\", \"b\", \"a\"]]",
+            "expected": "[\"a\",\"b\"]",
+            "hidden": false
+          },
+          {
+            "name": "空の配列",
+            "stdin": "[[]]",
+            "expected": "[]",
+            "hidden": true
+          },
+          {
+            "name": "最初に現れた順を保つ",
+            "stdin": "[[3, 1, 3, 2, 1]]",
+            "expected": "[3,1,2]",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "function unique(arr) {\n  return [...new Set(arr)];\n}\n"
+      }
+    },
+    {
+      "id": "q-fastapi-hello",
+      "repository_id": "repo-py-fastapi",
+      "issue_number": 1,
+      "title": "FastAPI で Hello エンドポイントを作る",
+      "description": "GET /hello に対して { 'message': 'Hello' } を返すエンドポイントを実装してください。",
+      "language": "python",
+      "framework": "fastapi",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "from fastapi import FastAPI\n\napp = FastAPI()\n\n# TODO: GET /hello を実装\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "FastAPI",
+        "GET",
+        "初級"
+      ],
+      "explanation": "この問題は FastAPI / GET / 初級 の理解度を確認します。FastAPI で Hello エンドポイントを作る を解くことで「FastAPI」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "FastAPI の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "FastAPI で Hello エンドポイントを作る の核心は「FastAPI / GET / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "FastAPI の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/hello\")\ndef hello():\n    return {\"message\": \"Hello\"}\n",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-fastapi-hello-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "from fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/hello\")\ndef hello():\n    return {\"message\": \"Hello\"}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-fastapi-path-param",
+      "repository_id": "repo-py-fastapi",
+      "issue_number": 2,
+      "title": "Path Parameter を受け取る",
+      "description": "GET /users/{user_id} を作り、 user_id を { 'id': user_id } 形式で返してください。",
+      "language": "python",
+      "framework": "fastapi",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "from fastapi import FastAPI\n\napp = FastAPI()\n\n# TODO: GET /users/{user_id}\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "FastAPI",
+        "Path",
+        "初級"
+      ],
+      "explanation": "この問題は FastAPI / Path / 初級 の理解度を確認します。Path Parameter を受け取る を解くことで「FastAPI」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "FastAPI の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Path Parameter を受け取る の核心は「FastAPI / Path / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "FastAPI の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/users/{user_id}\")\ndef get_user(user_id: int):\n    return {\"id\" ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-fastapi-path-param-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "from fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/users/{user_id}\")\ndef get_user(user_id: int):\n    return {\"id\": user_id}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-fastapi-pydantic",
+      "repository_id": "repo-py-fastapi",
+      "issue_number": 3,
+      "title": "Pydantic で POST リクエストを受ける",
+      "description": "POST /items で Item (name, price) を受け取り、そのまま返してください。Pydantic BaseModel を使うこと。",
+      "language": "python",
+      "framework": "fastapi",
+      "difficulty": "normal",
+      "type": "implementation",
+      "initial_code": "from fastapi import FastAPI\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\n# TODO: Item モデルと POST /items\n",
+      "estimated_minutes": 15,
+      "tags": [
+        "FastAPI",
+        "Pydantic",
+        "POST",
+        "中級"
+      ],
+      "explanation": "この問題は FastAPI / Pydantic / POST / 中級 の理解度を確認します。Pydantic で POST リクエストを受ける を解くことで「FastAPI」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "FastAPI の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Pydantic で POST リクエストを受ける の核心は「FastAPI / Pydantic / POST / 中級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "FastAPI の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\n\nclass Item(BaseModel):\n    name: str\n    p ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-fastapi-pydantic-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "from fastapi import FastAPI\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\n\nclass Item(BaseModel):\n    name: str\n    price: float\n\n\n@app.post(\"/items\")\ndef create_item(item: Item):\n    return item\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-django-view",
+      "repository_id": "repo-py-django",
+      "issue_number": 1,
+      "title": "Django View で JSON を返す",
+      "description": "Django の View で { 'message': 'Hello' } を JsonResponse で返すコードを書いてください。",
+      "language": "python",
+      "framework": "django",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "from django.http import JsonResponse\n\n# TODO: hello ビューを実装\n",
+      "estimated_minutes": 12,
+      "tags": [
+        "Django",
+        "View",
+        "初級"
+      ],
+      "explanation": "この問題は Django / View / 初級 の理解度を確認します。Django View で JSON を返す を解くことで「Django」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "Django の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Django View で JSON を返す の核心は「Django / View / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "Django の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nfrom django.http import JsonResponse\n\n\ndef hello(request):\n    return JsonResponse({\"message\": \"Hello\"})\n",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-django-view-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "from django.http import JsonResponse\n\n\ndef hello(request):\n    return JsonResponse({\"message\": \"Hello\"})\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-py-sum",
+      "repository_id": "repo-py",
+      "issue_number": 1,
+      "title": "リストの合計を返す",
+      "description": "組み込みの sum を使わずに、整数のリストの合計を返す my_sum を実装してください。空のリストなら 0 を返します。",
+      "language": "python",
+      "framework": null,
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "def my_sum(nums: list[int]) -> int:\n    # TODO: for 文で 1 つずつ足していこう\n    return 0\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "Python",
+        "loop",
+        "初級"
+      ],
+      "explanation": "この問題は Python / loop / 初級 の理解度を確認します。リストの合計を返す を解くことで「Python」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "合計は「0 から始めて、要素を 1 つずつ足していく」ことで求められます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "合計を入れておく変数 (例: total = 0) を用意し、for 文でリストを順番に取り出しましょう。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "for n in nums: の中で total += n を実行し、ループの後で total を返します。",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-py-sum-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "def my_sum(nums: list[int]) -> int:\n    total = 0\n    for n in nums:\n        total += n\n    return total\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n# ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nimport contextlib as _cl, json as _json, sys as _sys\nimport builtins as _b\n\ndef _no_sum(*_a, **_k):\n    raise RuntimeError(\"この問題では sum を使わずに実装してください\")\n\n_b.sum = _no_sum\n_args = _json.loads(_sys.stdin.read())\nwith _cl.redirect_stdout(_sys.stderr):  # print でのデバッグ出力は stderr に回す\n    _result = my_sum(*_args)\nprint(_json.dumps(_result, ensure_ascii=False))\n",
+        "tests": [
+          {
+            "name": "基本: [1, 2, 3, 4, 5]",
+            "stdin": "[[1, 2, 3, 4, 5]]",
+            "expected": "15",
+            "hidden": false
+          },
+          {
+            "name": "空のリスト",
+            "stdin": "[[]]",
+            "expected": "0",
+            "hidden": false
+          },
+          {
+            "name": "負の数を含む",
+            "stdin": "[[-3, 3, 10]]",
+            "expected": "10",
+            "hidden": true
+          },
+          {
+            "name": "大きな値",
+            "stdin": "[[1000000, 2000000]]",
+            "expected": "3000000",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "def my_sum(nums: list[int]) -> int:\n    total = 0\n    for n in nums:\n        total += n\n    return total\n",
+        "forbidden_names": [
+          "sum"
+        ]
+      }
+    },
+    {
+      "id": "q-py-comprehension",
+      "repository_id": "repo-py",
+      "issue_number": 2,
+      "title": "内包表記で偶数の2乗",
+      "description": "リスト内包表記を使って、整数のリストから偶数だけを取り出し、それぞれを 2 乗したリストを返す even_squares を実装してください。順番は元のリストのままにします。",
+      "language": "python",
+      "framework": null,
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "def even_squares(nums: list[int]) -> list[int]:\n    # TODO: [式 for 変数 in リスト if 条件] の形で書いてみよう\n    return []\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "Python",
+        "内包表記",
+        "初級"
+      ],
+      "explanation": "この問題は Python / 内包表記 / 初級 の理解度を確認します。内包表記で偶数の2乗 を解くことで「Python」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "リスト内包表記は「変換」と「絞り込み」を 1 行で書ける構文です。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "偶数の判定は n % 2 == 0 です。絞り込みの条件は内包表記の最後に if で書きます。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "[n * n for n in nums if n % 2 == 0] の形になります。",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-py-comprehension-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "def even_squares(nums: list[int]) -> list[int]:\n    return [n * n for n in nums if n % 2 == 0]\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n# ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nimport contextlib as _cl, json as _json, sys as _sys\n_args = _json.loads(_sys.stdin.read())\nwith _cl.redirect_stdout(_sys.stderr):  # print でのデバッグ出力は stderr に回す\n    _result = even_squares(*_args)\nprint(_json.dumps(_result, ensure_ascii=False))\n",
+        "tests": [
+          {
+            "name": "基本: [1, 2, 3, 4, 5, 6]",
+            "stdin": "[[1, 2, 3, 4, 5, 6]]",
+            "expected": "[4, 16, 36]",
+            "hidden": false
+          },
+          {
+            "name": "空のリスト",
+            "stdin": "[[]]",
+            "expected": "[]",
+            "hidden": false
+          },
+          {
+            "name": "0 と負の偶数",
+            "stdin": "[[-2, -1, 0]]",
+            "expected": "[4, 0]",
+            "hidden": true
+          },
+          {
+            "name": "偶数がない",
+            "stdin": "[[7, 9]]",
+            "expected": "[]",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "def even_squares(nums: list[int]) -> list[int]:\n    return [n * n for n in nums if n % 2 == 0]\n"
+      }
+    },
+    {
+      "id": "q-py-class",
+      "repository_id": "repo-py",
+      "issue_number": 3,
+      "title": "Person クラスと greet メソッド",
+      "description": "name (名前) と age (年齢) を持つ Person クラスを実装してください。greet() は「こんにちは、{name} ({age}) です。」という文字列を返します。",
+      "language": "python",
+      "framework": null,
+      "difficulty": "normal",
+      "type": "implementation",
+      "initial_code": "class Person:\n    # TODO: __init__ で name と age を受け取って保存しよう\n\n    def greet(self) -> str:\n        # TODO\n        return \"\"\n",
+      "estimated_minutes": 15,
+      "tags": [
+        "Python",
+        "class",
+        "OOP",
+        "中級"
+      ],
+      "explanation": "この問題は Python / class / OOP / 中級 の理解度を確認します。Person クラスと greet メソッド を解くことで「Python」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "インスタンスを作るときの値は __init__ で受け取り、self に保存します。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "def __init__(self, name: str, age: int) で受け取り、self.name = name のように保存しましょう。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "greet では f\"こんにちは、{self.name} ({self.age}) です。\" を返します。",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-py-class-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "class Person:\n    def __init__(self, name: str, age: int) -> None:\n        self.name = name\n        self.age = age\n\n    def greet(self) -> str:\n        return f\"こんにちは、{self.name} ({self.age}) です。\"\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n# ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nimport contextlib as _cl, json as _json, sys as _sys\n_args = _json.loads(_sys.stdin.read())\nwith _cl.redirect_stdout(_sys.stderr):  # print でのデバッグ出力は stderr に回す\n    _result = Person(*_args).greet()\nprint(_json.dumps(_result, ensure_ascii=False))\n",
+        "tests": [
+          {
+            "name": "基本: Alice, 30",
+            "stdin": "[\"Alice\", 30]",
+            "expected": "\"こんにちは、Alice (30) です。\"",
+            "hidden": false
+          },
+          {
+            "name": "日本語の名前",
+            "stdin": "[\"太郎\", 5]",
+            "expected": "\"こんにちは、太郎 (5) です。\"",
+            "hidden": false
+          },
+          {
+            "name": "年齢 0",
+            "stdin": "[\"Bob\", 0]",
+            "expected": "\"こんにちは、Bob (0) です。\"",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "class Person:\n    def __init__(self, name: str, age: int) -> None:\n        self.name = name\n        self.age = age\n\n    def greet(self) -> str:\n        return f\"こんにちは、{self.name} ({self.age}) です。\"\n"
+      }
+    },
+    {
+      "id": "q-sql-select",
+      "repository_id": "repo-sql-postgres",
+      "issue_number": 1,
+      "title": "users テーブルから全件取得",
+      "description": "users テーブルから全レコードを取得する SQL を完成させてください。",
+      "language": "sql",
+      "framework": "postgres",
+      "difficulty": "easy",
+      "type": "fill-blank",
+      "initial_code": "______ * FROM users;",
+      "estimated_minutes": 5,
+      "tags": [
+        "SQL",
+        "SELECT",
+        "初級"
+      ],
+      "explanation": "この問題は SQL / SELECT / 初級 の理解度を確認します。users テーブルから全件取得 を解くことで「SQL」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "SQL の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "users テーブルから全件取得 の核心は「SQL / SELECT / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "SQL の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nSELECT * FROM users;",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-sql-select-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "SELECT * FROM users;",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-sql-join",
+      "repository_id": "repo-sql-postgres",
+      "issue_number": 2,
+      "title": "INNER JOIN で関連テーブルを結合",
+      "description": "users と orders を user_id で INNER JOIN し、user.name と order.total を取得してください。",
+      "language": "sql",
+      "framework": "postgres",
+      "difficulty": "normal",
+      "type": "implementation",
+      "initial_code": "SELECT u.name, o.total\nFROM users u\n-- TODO: JOIN\n;",
+      "estimated_minutes": 12,
+      "tags": [
+        "SQL",
+        "JOIN",
+        "中級"
+      ],
+      "explanation": "この問題は SQL / JOIN / 中級 の理解度を確認します。INNER JOIN で関連テーブルを結合 を解くことで「SQL」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "SQL の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "INNER JOIN で関連テーブルを結合 の核心は「SQL / JOIN / 中級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "SQL の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nSELECT u.name, o.total\nFROM users u\nINNER JOIN orders o ON o.user_id = u.id;",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-sql-join-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "SELECT u.name, o.total\nFROM users u\nINNER JOIN orders o ON o.user_id = u.id;",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-tailwind-card",
+      "repository_id": "repo-html-tailwind",
+      "issue_number": 1,
+      "title": "Tailwind でカードレイアウト",
+      "description": "Tailwind だけで、影付き・角丸のカードを実装してください。タイトルと説明文を含めること。",
+      "language": "html",
+      "framework": "tailwind",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "<div class=\"\">\n  <h2>Card title</h2>\n  <p>Description...</p>\n</div>",
+      "estimated_minutes": 10,
+      "tags": [
+        "Tailwind",
+        "Layout",
+        "初級"
+      ],
+      "explanation": "この問題は Tailwind / Layout / 初級 の理解度を確認します。Tailwind でカードレイアウト を解くことで「Tailwind」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "Tailwind の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Tailwind でカードレイアウト の核心は「Tailwind / Layout / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "Tailwind の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\n<div class=\"rounded-2xl shadow-md p-4 bg-white max-w-sm\">\n  <h2 class=\"text-lg font-semibold\">Card title</h2>\n  <p class ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-tailwind-card-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "<div class=\"rounded-2xl shadow-md p-4 bg-white max-w-sm\">\n  <h2 class=\"text-lg font-semibold\">Card title</h2>\n  <p class=\"text-sm text-slate-600 mt-1\">Description...</p>\n</div>",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-html-flex-center",
+      "repository_id": "repo-html",
+      "issue_number": 1,
+      "title": "Flexbox で要素を中央寄せ",
+      "description": ".container 内の .box を縦横ともに中央寄せする CSS を書いてください。",
+      "language": "css",
+      "framework": null,
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": ".container {\n  /* TODO */\n  height: 200px;\n}\n.box {\n  width: 80px;\n  height: 80px;\n}\n",
+      "estimated_minutes": 8,
+      "tags": [
+        "CSS",
+        "Flexbox",
+        "初級"
+      ],
+      "explanation": "この問題は CSS / Flexbox / 初級 の理解度を確認します。Flexbox で要素を中央寄せ を解くことで「CSS」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "CSS の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Flexbox で要素を中央寄せ の核心は「CSS / Flexbox / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "CSS の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\n.container {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 200px;\n}\n.box {\n  width: 80px; ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-html-flex-center-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": ".container {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 200px;\n}\n.box {\n  width: 80px;\n  height: 80px;\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-express-hello",
+      "repository_id": "repo-node-express",
+      "issue_number": 1,
+      "title": "Express で GET /hello を作る",
+      "description": "Express で GET /hello に対して { message: 'Hello' } を返すルートを書いてください。",
+      "language": "javascript",
+      "framework": "express",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "const express = require(\"express\");\nconst app = express();\n\n// TODO: GET /hello\n\napp.listen(3000);\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "Node.js",
+        "Express",
+        "初級"
+      ],
+      "explanation": "この問題は Node.js / Express / 初級 の理解度を確認します。Express で GET /hello を作る を解くことで「Node.js」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "Node.js の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Express で GET /hello を作る の核心は「Node.js / Express / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "Node.js の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nconst express = require(\"express\");\nconst app = express();\n\napp.get(\"/hello\", (req, res) => {\n  res.json({ message: \"Hel ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-express-hello-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "const express = require(\"express\");\nconst app = express();\n\napp.get(\"/hello\", (req, res) => {\n  res.json({ message: \"Hello\" });\n});\n\napp.listen(3000);\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-vue-counter",
+      "repository_id": "repo-vue-nuxt",
+      "issue_number": 1,
+      "title": "Vue Composition API でカウンター",
+      "description": "ref を使って <button @click=\"count++\">+</button> でインクリメントするカウンターを書いてください。",
+      "language": "typescript",
+      "framework": "vue",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "<script setup lang=\"ts\">\n// TODO: ref を使う\n</script>\n\n<template>\n  <button>+</button>\n</template>\n",
+      "estimated_minutes": 12,
+      "tags": [
+        "Vue",
+        "ref",
+        "初級"
+      ],
+      "explanation": "この問題は Vue / ref / 初級 の理解度を確認します。Vue Composition API でカウンター を解くことで「Vue」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "Vue の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Vue Composition API でカウンター の核心は「Vue / ref / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "Vue の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\n<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nconst count = ref(0);\n</script>\n\n<template>\n  <button @click=\"count+ ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-vue-counter-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nconst count = ref(0);\n</script>\n\n<template>\n  <button @click=\"count++\">Count: {{ count }}</button>\n</template>\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-go-gin-hello",
+      "repository_id": "repo-go-gin",
+      "issue_number": 1,
+      "title": "Gin で GET /hello",
+      "description": "Gin の Default ルーターで GET /hello に {\"message\":\"Hello\"} を返してください。",
+      "language": "go",
+      "framework": "gin",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "package main\n\nimport \"github.com/gin-gonic/gin\"\n\nfunc main() {\n    r := gin.Default()\n    // TODO: GET /hello\n    r.Run()\n}\n",
+      "estimated_minutes": 15,
+      "tags": [
+        "Go",
+        "Gin",
+        "初級"
+      ],
+      "explanation": "この問題は Go / Gin / 初級 の理解度を確認します。Gin で GET /hello を解くことで「Go」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "Go の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Gin で GET /hello の核心は「Go / Gin / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "Go の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\npackage main\n\nimport \"github.com/gin-gonic/gin\"\n\nfunc main() {\n    r := gin.Default()\n    r.GET(\"/hello\", func(c *gin.Co ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-go-gin-hello-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "package main\n\nimport \"github.com/gin-gonic/gin\"\n\nfunc main() {\n    r := gin.Default()\n    r.GET(\"/hello\", func(c *gin.Context) {\n        c.JSON(200, gin.H{\"message\": \"Hello\"})\n    })\n    r.Run()\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-java-spring-controller",
+      "repository_id": "repo-java-spring",
+      "issue_number": 1,
+      "title": "Spring Boot で REST Controller",
+      "description": "@RestController と @GetMapping を使い、/hello で \"Hello\" を返してください。",
+      "language": "java",
+      "framework": "spring-boot",
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "import org.springframework.web.bind.annotation.*;\n\n// TODO: RestController を実装\npublic class HelloController {\n}\n",
+      "estimated_minutes": 15,
+      "tags": [
+        "Java",
+        "Spring Boot",
+        "初級"
+      ],
+      "explanation": "この問題は Java / Spring Boot / 初級 の理解度を確認します。Spring Boot で REST Controller を解くことで「Java」を実装ベースで身につけられます。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "Hint 1 — 考え方の方向性",
+          "content": "Java の基本イディオムから考えてみましょう。直接 API を書く前に「何を達成したいか」を1文で言語化すると整理できます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "Hint 2 — 着目すべき箇所",
+          "content": "Spring Boot で REST Controller の核心は「Java / Spring Boot / 初級」です。空欄/TODOコメントから手をつけ、まず最小限の入出力に絞って実装してください。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "Hint 3 — 実装に近いヒント",
+          "content": "Java の典型的なシンタックスを使うと自然に書けます。標準ライブラリやフレームワークの定番イディオムを思い出してください。",
+          "closeness": "implementation"
+        },
+        {
+          "level": 4,
+          "title": "Hint 4 — ほぼ答え",
+          "content": "解答例の構造を思い浮かべると、必要な行は数行に収まります。最初に書く行と最後に書く行をイメージしましょう。",
+          "closeness": "near-answer"
+        },
+        {
+          "level": 5,
+          "title": "Hint 5 — 答え直前",
+          "content": "最小実装はほぼこの形になります:\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\npublic class HelloController {\n    @GetMapping(\"/hell ...",
+          "closeness": "almost-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "q-java-spring-controller-recommended",
+          "title": "実務で扱いやすい書き方",
+          "code": "import org.springframework.web.bind.annotation.*;\n\n@RestController\npublic class HelloController {\n    @GetMapping(\"/hello\")\n    public String hello() {\n        return \"Hello\";\n    }\n}\n",
+          "explanation": "可読性と保守性を最優先した教科書的な実装です。チームレビューでも合意を取りやすい書き方。",
+          "points": [
+            "意図がコードから読み取れる",
+            "テストが書きやすい",
+            "副作用が局所化されている"
+          ],
+          "is_recommended": true
+        }
+      ],
+      "execution": null
+    },
+    {
+      "id": "q-py-palindrome",
+      "repository_id": "repo-py",
+      "issue_number": 4,
+      "title": "回文判定 is_palindrome",
+      "description": "文字列が回文 (前から読んでも後ろから読んでも同じ) なら True を返す is_palindrome を実装してください。大文字・小文字の違いと空白は無視します。",
+      "language": "python",
+      "framework": null,
+      "difficulty": "easy",
+      "type": "implementation",
+      "initial_code": "def is_palindrome(s: str) -> bool:\n    # TODO\n    return False\n",
+      "estimated_minutes": 10,
+      "tags": [
+        "Python",
+        "文字列",
+        "スライス"
+      ],
+      "explanation": "回文判定 is_palindrome を通して Python, 文字列, スライス を実装ベースで確認します。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "まず比較しやすい形 (小文字・空白なし) に整えてから判定します。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "s.lower() と s.replace(\" \", \"\") で整えられます。文字列の反転はスライス [::-1] が使えます。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "整えた文字列を normalized とすると、normalized == normalized[::-1] を返せば完成です。",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "sol-q-py-palindrome",
+          "title": "模範解答",
+          "code": "def is_palindrome(s: str) -> bool:\n    normalized = s.replace(\" \", \"\").lower()\n    return normalized == normalized[::-1]\n",
+          "explanation": "",
+          "points": [],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n# ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nimport contextlib as _cl, json as _json, sys as _sys\n_args = _json.loads(_sys.stdin.read())\nwith _cl.redirect_stdout(_sys.stderr):  # print でのデバッグ出力は stderr に回す\n    _result = is_palindrome(*_args)\nprint(_json.dumps(_result, ensure_ascii=False))\n",
+        "tests": [
+          {
+            "name": "level",
+            "stdin": "[\"level\"]",
+            "expected": "true",
+            "hidden": false
+          },
+          {
+            "name": "Hello",
+            "stdin": "[\"Hello\"]",
+            "expected": "false",
+            "hidden": false
+          },
+          {
+            "name": "大文字と空白を無視",
+            "stdin": "[\"Taco cat\"]",
+            "expected": "true",
+            "hidden": false
+          },
+          {
+            "name": "空文字",
+            "stdin": "[\"\"]",
+            "expected": "true",
+            "hidden": true
+          },
+          {
+            "name": "2 文字",
+            "stdin": "[\"ab\"]",
+            "expected": "false",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "def is_palindrome(s: str) -> bool:\n    normalized = s.replace(\" \", \"\").lower()\n    return normalized == normalized[::-1]\n"
+      }
+    },
+    {
+      "id": "q-js-count-words",
+      "repository_id": "repo-js",
+      "issue_number": 3,
+      "title": "単語の出現回数を数える countWords",
+      "description": "文章を受け取り、単語ごとの出現回数をオブジェクトで返す countWords を実装してください。単語は空白で区切り、大文字・小文字は区別しません (小文字にそろえる)。キーの順番は最初に現れた順です。",
+      "language": "javascript",
+      "framework": null,
+      "difficulty": "normal",
+      "type": "implementation",
+      "initial_code": "function countWords(text) {\n  // TODO\n  return {};\n}\n",
+      "estimated_minutes": 15,
+      "tags": [
+        "JavaScript",
+        "オブジェクト",
+        "文字列"
+      ],
+      "explanation": "単語の出現回数を数える countWords を通して JavaScript, オブジェクト, 文字列 を実装ベースで確認します。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "文章を単語の配列に分けてから、1 つずつ数えていきます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "split(\" \") だと連続した空白で空文字が混ざります。正規表現 /\\s+/ で分割し、空文字は飛ばしましょう。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "counts[word] = (counts[word] ?? 0) + 1 で、初めての単語にも対応できます。",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "sol-q-js-count-words",
+          "title": "模範解答",
+          "code": "function countWords(text) {\n  const counts = {};\n  for (const word of text.toLowerCase().split(/\\s+/)) {\n    if (!word) continue;\n    counts[word] = (counts[word] ?? 0) + 1;\n  }\n  return counts;\n}\n",
+          "explanation": "",
+          "points": [],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n// ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nconst __args = JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"));\nconst __log = console.log;\nconsole.log = (...a) => console.error(...a); // console.log でのデバッグ出力は stderr に回す\nconst __result = countWords(...__args);\nconsole.log = __log;\nconsole.log(__result === undefined ? \"undefined\" : JSON.stringify(__result));\n",
+        "tests": [
+          {
+            "name": "基本",
+            "stdin": "[\"a b a\"]",
+            "expected": "{\"a\":2,\"b\":1}",
+            "hidden": false
+          },
+          {
+            "name": "空文字",
+            "stdin": "[\"\"]",
+            "expected": "{}",
+            "hidden": false
+          },
+          {
+            "name": "大文字・小文字を区別しない",
+            "stdin": "[\"Hello hello WORLD\"]",
+            "expected": "{\"hello\":2,\"world\":1}",
+            "hidden": true
+          },
+          {
+            "name": "余分な空白",
+            "stdin": "[\"  spaced   out \"]",
+            "expected": "{\"spaced\":1,\"out\":1}",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "function countWords(text) {\n  const counts = {};\n  for (const word of text.toLowerCase().split(/\\s+/)) {\n    if (!word) continue;\n    counts[word] = (counts[word] ?? 0) + 1;\n  }\n  return counts;\n}\n"
+      }
+    },
+    {
+      "id": "q-ts-group-by",
+      "repository_id": "repo-ts",
+      "issue_number": 3,
+      "title": "型安全な groupBy",
+      "description": "配列とキーを取り出す関数を受け取り、キーごとに要素をまとめたオブジェクトを返す groupBy<T, K extends string> を実装してください。各グループ内の順番は元の配列の順を保ちます。",
+      "language": "typescript",
+      "framework": null,
+      "difficulty": "hard",
+      "type": "implementation",
+      "initial_code": "function groupBy<T, K extends string>(items: T[], keyOf: (item: T) => K): Record<K, T[]> {\n  // TODO\n  return {} as Record<K, T[]>;\n}\n",
+      "estimated_minutes": 20,
+      "tags": [
+        "TypeScript",
+        "ジェネリクス",
+        "Record"
+      ],
+      "explanation": "型安全な groupBy を通して TypeScript, ジェネリクス, Record を実装ベースで確認します。",
+      "hints": [
+        {
+          "level": 1,
+          "title": "ヒント 1 — 考え方",
+          "content": "結果のオブジェクトを用意し、要素を 1 つずつ「キーに対応する配列」へ追加していきます。",
+          "closeness": "concept"
+        },
+        {
+          "level": 2,
+          "title": "ヒント 2 — 着目点",
+          "content": "キーは keyOf(item) で求められます。そのキーの配列がまだ無いときは空配列を作りましょう。",
+          "closeness": "focus"
+        },
+        {
+          "level": 3,
+          "title": "ヒント 3 — ほぼ答え",
+          "content": "(groups[key] ??= []).push(item) と書くと、初回の作成と追加を 1 行でできます。",
+          "closeness": "near-answer"
+        }
+      ],
+      "solutions": [
+        {
+          "id": "sol-q-ts-group-by",
+          "title": "模範解答",
+          "code": "function groupBy<T, K extends string>(items: T[], keyOf: (item: T) => K): Record<K, T[]> {\n  const groups = {} as Record<K, T[]>;\n  for (const item of items) {\n    const key = keyOf(item);\n    (groups[key] ??= []).push(item);\n  }\n  return groups;\n}\n",
+          "explanation": "",
+          "points": [],
+          "is_recommended": true
+        }
+      ],
+      "execution": {
+        "harness": "\n\n// ---- ここから下はテスト用の呼び出しコード (提出時に自動で追加されます) ----\nconst __args: [any[], string] = JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"));\nconst __log = console.log;\nconsole.log = (...a: unknown[]) => console.error(...a); // console.log でのデバッグ出力は stderr に回す\nconst __result = groupBy(__args[0], (item: any) => item[__args[1]]);\nconsole.log = __log;\nconsole.log(__result === undefined ? \"undefined\" : JSON.stringify(__result));\n",
+        "tests": [
+          {
+            "name": "type でまとめる",
+            "stdin": "[[{\"type\": \"a\", \"v\": 1}, {\"type\": \"b\", \"v\": 2}, {\"type\": \"a\", \"v\": 3}], \"type\"]",
+            "expected": "{\"a\":[{\"type\":\"a\",\"v\":1},{\"type\":\"a\",\"v\":3}],\"b\":[{\"type\":\"b\",\"v\":2}]}",
+            "hidden": false
+          },
+          {
+            "name": "空の配列",
+            "stdin": "[[], \"type\"]",
+            "expected": "{}",
+            "hidden": false
+          },
+          {
+            "name": "1 グループだけ",
+            "stdin": "[[{\"k\": \"x\"}, {\"k\": \"x\"}], \"k\"]",
+            "expected": "{\"x\":[{\"k\":\"x\"},{\"k\":\"x\"}]}",
+            "hidden": true
+          }
+        ],
+        "reference_solution": "function groupBy<T, K extends string>(items: T[], keyOf: (item: T) => K): Record<K, T[]> {\n  const groups = {} as Record<K, T[]>;\n  for (const item of items) {\n    const key = keyOf(item);\n    (groups[key] ??= []).push(item);\n  }\n  return groups;\n}\n"
+      }
+    }
+  ]
+}

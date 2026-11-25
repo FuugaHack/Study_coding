@@ -1,5 +1,14 @@
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
+
 from app.content.loader import Catalog, Course, Question
-from app.core.exceptions import ForbiddenError, NotFoundError, UnprocessableError
+from app.core.exceptions import (
+    ConflictError,
+    ForbiddenError,
+    NotFoundError,
+    UnprocessableError,
+)
+from app.domain import challenge as ch
 from app.domain import gamification as g
 from app.domain.grading import InvalidAnswerError, grade
 from app.repositories.gamification_repository import GamificationRepository
@@ -12,12 +21,40 @@ from app.schemas.catalog import (
     CatalogQuestion,
 )
 from app.schemas.gamification import RewardResponse
-from app.services.gamification_service import GamificationService
+from app.services.gamification_service import GamificationService, RewardSummary
 
 # 前提コースを「クリア」とみなす正解率 (docs/expansion/m1-design.md §5)
 CLEAR_RATIO = 0.7
 # 同じ問題でこの回数以上間違えたら正解を表示する
 REVEAL_AFTER_INCORRECT = 2
+
+
+@dataclass(frozen=True)
+class ProgressView:
+    """あるユーザーのコース進捗 (解答状況 + コース単位の達成) から状態を判定する。"""
+
+    catalog: Catalog
+    status: dict[str, bool]  # question_id -> solved
+    achievements: dict[str, set[str]]  # course_id -> {"placement_passed", "boss_defeated"}
+
+    def solved_count(self, course: Course) -> int:
+        return sum(1 for q in course.questions if self.status.get(q.id))
+
+    def is_cleared(self, course: Course) -> bool:
+        if self.has(course, "placement_passed"):
+            return True
+        total = len(course.questions)
+        return total > 0 and self.solved_count(course) / total >= CLEAR_RATIO
+
+    def is_unlocked(self, course: Course) -> bool:
+        for pid in course.prerequisites:
+            pre = self.catalog.get_course(pid)
+            if pre is None or not self.is_cleared(pre):
+                return False
+        return True
+
+    def has(self, course: Course, kind: str) -> bool:
+        return kind in self.achievements.get(course.id, set())
 
 
 class CatalogService:
@@ -33,10 +70,17 @@ class CatalogService:
 
     # ---------------------------------------------------------- 一覧・詳細
 
+    async def progress(self, user_id: str) -> ProgressView:
+        return ProgressView(
+            catalog=self.catalog,
+            status=await self.repo.get_question_status(user_id),
+            achievements=await self.repo.course_achievements(user_id),
+        )
+
     async def list_courses(self, user_id: str) -> CatalogCourseListResponse:
-        status = await self.repo.get_question_status(user_id)
+        view = await self.progress(user_id)
         return CatalogCourseListResponse(
-            courses=[self._summary(c, status) for c in self.catalog.courses],
+            courses=[self._summary(c, view) for c in self.catalog.courses],
             content_version=self.catalog.version,
         )
 
@@ -44,11 +88,13 @@ class CatalogService:
         course = self.catalog.get_course(course_id)
         if course is None:
             raise NotFoundError("コース")
-        status = await self.repo.get_question_status(user_id)
-        summary = self._summary(course, status)
+        view = await self.progress(user_id)
+        summary = self._summary(course, view)
         return CatalogCourseDetailResponse(
             **summary.model_dump(),
-            questions=[self._public_question(q, status.get(q.id, False)) for q in course.questions],
+            questions=[
+                self.public_question(q, view.status.get(q.id, False)) for q in course.questions
+            ],
         )
 
     # ---------------------------------------------------------- 回答
@@ -59,9 +105,11 @@ class CatalogService:
             raise NotFoundError("問題")
         course, question = found
 
-        status = await self.repo.get_question_status(user_id)
-        if not self._is_unlocked(course, status):
+        if not (await self.progress(user_id)).is_unlocked(course):
             raise ForbiddenError("前提コースをクリアすると挑戦できます")
+        grace = timedelta(seconds=ch.SUBMIT_GRACE_SECONDS)
+        if await self.repo.in_open_challenge(user_id, question.id, datetime.now(UTC) - grace):
+            raise ConflictError("チャレンジ受験中の問題は、提出してから練習しよう")
 
         answer = req.model_dump(exclude={"time_spent_seconds"}, exclude_none=True)
         try:
@@ -122,7 +170,7 @@ class CatalogService:
                 today=today,
                 summary=summary,
             )
-        await self.gamification.evaluate_daily_quests(user_id, today, summary)
+        await self.gamification.after_activity(user_id, today, summary)
 
         reveal = result.outcome != "incorrect" or (
             await self.repo.count_incorrect(user_id, question.id) >= REVEAL_AFTER_INCORRECT
@@ -137,45 +185,27 @@ class CatalogService:
             blank_results=result.blank_results,
             correct_answer=question.answer if reveal else None,
             explanation=question.explanation if reveal else None,
-            reward=RewardResponse(
-                xp_gained=summary.xp_gained,
-                coins_gained=summary.coins_gained,
-                leveled_up=stats.level > summary.level_before,
-                level=stats.level,
-                completed_quests=summary.completed_quests,
-            ),
+            reward=reward_response(summary, stats.level),
             stats=stats,
         )
 
     # ---------------------------------------------------------- helpers
 
-    def _course_solved(self, course: Course, status: dict[str, bool]) -> int:
-        return sum(1 for q in course.questions if status.get(q.id))
-
-    def _is_cleared(self, course: Course, status: dict[str, bool]) -> bool:
+    def _summary(self, course: Course, view: ProgressView) -> CatalogCourseSummary:
         total = len(course.questions)
-        return total > 0 and self._course_solved(course, status) / total >= CLEAR_RATIO
-
-    def _is_unlocked(self, course: Course, status: dict[str, bool]) -> bool:
-        for pid in course.prerequisites:
-            pre = self.catalog.get_course(pid)
-            if pre is None or not self._is_cleared(pre, status):
-                return False
-        return True
-
-    def _summary(self, course: Course, status: dict[str, bool]) -> CatalogCourseSummary:
-        total = len(course.questions)
-        solved = self._course_solved(course, status)
-        attempted = any(q.id in status for q in course.questions)
-        locked = not self._is_unlocked(course, status)
+        solved = view.solved_count(course)
+        attempted = any(q.id in view.status for q in course.questions)
+        locked = not view.is_unlocked(course)
+        cleared = view.is_cleared(course)
         if locked:
             state = "locked"
         elif total and solved == total:
             state = "completed"
-        elif attempted:
+        elif attempted or cleared:
             state = "in-progress"
         else:
             state = "not-started"
+        available = ch.is_available(course)
         return CatalogCourseSummary(
             id=course.id,
             title=course.title,
@@ -196,10 +226,15 @@ class CatalogService:
             progress=round(solved / total * 100) if total else 0,
             status=state,
             is_locked=locked,
+            is_cleared=cleared,
+            skipped=view.has(course, "placement_passed"),
+            boss_defeated=view.has(course, "boss_defeated"),
+            can_take_placement=available and not cleared,
+            can_challenge_boss=available and cleared and not locked,
         )
 
     @staticmethod
-    def _public_question(q: Question, solved: bool) -> CatalogQuestion:
+    def public_question(q: Question, solved: bool) -> CatalogQuestion:
         return CatalogQuestion(
             id=q.id,
             type=q.type,
@@ -211,3 +246,14 @@ class CatalogService:
             blank_count=len(q.answers) if q.type == "code" else None,
             solved=solved,
         )
+
+
+def reward_response(summary: RewardSummary, level: int) -> RewardResponse:
+    return RewardResponse(
+        xp_gained=summary.xp_gained,
+        coins_gained=summary.coins_gained,
+        leveled_up=level > summary.level_before,
+        level=level,
+        completed_quests=summary.completed_quests,
+        new_badges=summary.new_badges,
+    )

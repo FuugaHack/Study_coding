@@ -13,6 +13,8 @@ services:
       REDIS_URL: redis://redis:6379
       CORS_ORIGINS: '["http://localhost:3000"]'
       PYTHONPATH: /app
+      RUNNER_SOCKET: /sock/runner.sock
+      RUNNER_TOKEN: dev-runner-token
     depends_on:
       db:
         condition: service_healthy
@@ -20,6 +22,54 @@ services:
         condition: service_healthy
     volumes:
       - ./apps/backend:/app
+      - runner_sock:/sock
+
+  # AI 処理 (LLM 呼び出し) のワーカー。API と同じイメージで、async_tasks をキューとして処理する
+  # (docs/expansion/m4-design.md §3)
+  worker:
+    build:
+      context: ./apps/backend
+      args:
+        INSTALL_DEV: "true"
+    command: python -m app.worker
+    # 停止時は新しいタスクを取らずに、処理中のタスク (最大 AI_TASK_TIMEOUT_S) を終えてから止まる
+    stop_grace_period: 200s
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/learning_platform
+      REDIS_URL: redis://redis:6379
+      PYTHONPATH: /app
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./apps/backend:/app
+
+  # ユーザーコードの実行環境。ネットワークなし・読み取り専用 FS・最小ケーパビリティ。
+  # backend とは共有ボリューム上の UNIX ソケットでのみ通信する (docs/expansion/m3-design.md)
+  runner:
+    build:
+      context: ./apps/runner
+    network_mode: none
+    # PID 1 を tini にして孤児・ゾンビプロセスを回収する (fork bomb 後に pids を食いつぶさない)
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    cap_add: [SETUID, SETGID, CHOWN, KILL, DAC_OVERRIDE, FOWNER]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0
+    environment:
+      RUNNER_TOKEN: dev-runner-token
+      RUNNER_SANDBOXED: "1"
+    volumes:
+      - runner_sock:/sock
+    restart: unless-stopped
 
   frontend:
     build:
@@ -64,5 +114,6 @@ services:
       retries: 5
 
 volumes:
+  runner_sock:
   pgdata:
   frontend_node_modules:

@@ -7,6 +7,7 @@ import { getErrorMessage } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/LoadingState";
 import { QuestionItem } from "@/components/courses/QuestionItem";
+import { ChallengeActions } from "@/components/courses/ChallengeActions";
 import { CategoryBadge, LevelBadge, StatusBadge, TagPill } from "@/components/courses/Badges";
 import { CATEGORY_ACCENT_CLASS } from "@/components/courses/catalogStyles";
 
@@ -106,6 +107,8 @@ export function CatalogCoursePage() {
           </div>
         </header>
 
+        <ChallengeActions course={data} />
+
         {data.isLocked && (
           <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
             <div className="text-4xl" aria-hidden>
@@ -113,6 +116,7 @@ export function CatalogCoursePage() {
             </div>
             <p className="mt-2 text-sm text-slate-700">
               「{data.prerequisiteTitles.join("」「")}」の 70% に正解すると解放されます。
+              {data.canTakePlacement && " 経験者は上の実力テストで飛び級もできます。"}
             </p>
           </div>
         )}

@@ -1,23 +1,19 @@
 import { useState } from "react";
-import type { CodingQuestion, CodingRepository } from "@/types/coding";
+import type { CodingIssueSummary, CodingRepositorySummary } from "@learning-platform/shared-types";
 import { RepositoryList } from "@/components/coding/RepositoryList";
 import { IssueList } from "@/components/coding/IssueList";
 import { Editor } from "@/components/coding/Editor";
 
 type Mode =
   | { kind: "repos" }
-  | { kind: "issues"; repository: CodingRepository }
-  | { kind: "editor"; repository: CodingRepository; question: CodingQuestion };
+  | { kind: "issues"; repository: CodingRepositorySummary }
+  | { kind: "editor"; repository: CodingRepositorySummary; issue: CodingIssueSummary };
 
 export function CodingPage() {
   const [mode, setMode] = useState<Mode>({ kind: "repos" });
 
   if (mode.kind === "repos") {
-    return (
-      <RepositoryList
-        onSelect={(repository) => setMode({ kind: "issues", repository })}
-      />
-    );
+    return <RepositoryList onSelect={(repository) => setMode({ kind: "issues", repository })} />;
   }
 
   if (mode.kind === "issues") {
@@ -25,17 +21,15 @@ export function CodingPage() {
       <IssueList
         repository={mode.repository}
         onBack={() => setMode({ kind: "repos" })}
-        onSelect={(question) =>
-          setMode({ kind: "editor", repository: mode.repository, question })
-        }
+        onSelect={(issue) => setMode({ kind: "editor", repository: mode.repository, issue })}
       />
     );
   }
 
   return (
     <Editor
-      key={mode.question.id}
-      question={mode.question}
+      key={mode.issue.id}
+      questionId={mode.issue.id}
       onBack={() => setMode({ kind: "issues", repository: mode.repository })}
     />
   );

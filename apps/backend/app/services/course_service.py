@@ -1,6 +1,7 @@
 from decimal import Decimal
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ConflictError, NotFoundError
+from app.content.coding import EXECUTABLE_LANGUAGES
 from app.domain import gamification as g
 from app.models.progress import ProgressStatus
 from app.repositories.attempt_repository import AttemptRepository
@@ -15,6 +16,7 @@ from app.schemas.lesson import (
     SubmitLessonResponse,
 )
 from app.services.gamification_service import GamificationService
+from app.services.runner_client import RunnerClient, RunTest
 
 
 class CourseService:
@@ -23,10 +25,12 @@ class CourseService:
         course_repo: CourseRepository,
         attempt_repo: AttemptRepository,
         gamification: GamificationService,
+        runner: RunnerClient,
     ):
         self.course_repo = course_repo
         self.attempt_repo = attempt_repo
         self.gamification = gamification
+        self.runner = runner
 
     async def list_courses(self, user_id: str) -> CourseListResponse:
         courses = await self.course_repo.get_all_published()
@@ -121,7 +125,7 @@ class CourseService:
             tags=lesson.tags or [],
             max_score=lesson.max_score,
             pass_score=lesson.pass_score,
-            content=lesson.content,
+            content=public_lesson_content(lesson.content),
         )
 
     async def submit_lesson(
@@ -132,7 +136,7 @@ class CourseService:
             raise NotFoundError("レッスン")
 
         # 採点
-        is_correct, score = self._grade(lesson, req)
+        is_correct, score = await self._grade(lesson, req)
 
         # 提出保存
         submission = await self.attempt_repo.create_submission(
@@ -177,7 +181,7 @@ class CourseService:
                 key=g.lesson_key(lesson_id),
                 today=today,
             )
-            await self.gamification.evaluate_daily_quests(user_id, today)
+            await self.gamification.after_activity(user_id, today)
 
         return SubmitLessonResponse(
             submission_id=str(submission.id),
@@ -185,8 +189,8 @@ class CourseService:
             score=score,
         )
 
-    def _grade(self, lesson, req: SubmitLessonRequest) -> tuple[bool, int]:
-        """採点ロジック（クイズ/コーディング共通）"""
+    async def _grade(self, lesson, req: SubmitLessonRequest) -> tuple[bool, int]:
+        """採点ロジック (クイズ: 選択肢の一致 / コーディング: サンドボックスでテスト実行)"""
         content = lesson.content
 
         if lesson.lesson_type.value == "quiz":
@@ -197,16 +201,40 @@ class CourseService:
             return is_correct, score
 
         if lesson.lesson_type.value == "coding":
-            # コーディング問題は簡易採点（本番ではDocker sandbox実行）
-            # テストケースの通過率でスコアを算出
             test_cases = content.get("test_cases", [])
             if not test_cases:
-                return True, lesson.max_score
-
-            # TODO: サンドボックス実行による本格採点
-            # 現段階では提出があれば部分点
-            score = lesson.max_score // 2 if req.submitted_code else 0
-            is_correct = score >= lesson.pass_score
-            return is_correct, score
+                raise ConflictError("このレッスンにはテストケースがないため自動採点できません")
+            language = content.get("language", "python")
+            if language not in EXECUTABLE_LANGUAGES:
+                raise ConflictError(f"{language} のレッスンは自動採点に対応していません")
+            if not (req.submitted_code or "").strip():
+                return False, 0
+            results = await self.runner.run(
+                language,
+                req.submitted_code,
+                [
+                    RunTest(stdin=t.get("input", ""), expected=t.get("expected_output", ""))
+                    for t in test_cases
+                ],
+            )
+            passed = sum(1 for r in results if r.status == "passed")
+            score = round(passed / len(results) * lesson.max_score)
+            return passed == len(results) and score >= lesson.pass_score, score
 
         return False, 0
+
+
+# クライアントに返さないレッスン content のキー (正解・解答例・解説)
+_SECRET_CONTENT_KEYS = {"correct_index", "answer", "answers", "solution", "explanation"}
+
+
+def public_lesson_content(content: dict) -> dict:
+    public = {k: v for k, v in content.items() if k not in _SECRET_CONTENT_KEYS}
+    if isinstance(public.get("test_cases"), list):
+        # 期待出力を返すとそれを print するだけで合格できるため、入力だけを返す
+        public["test_cases"] = [
+            {k: v for k, v in t.items() if k != "expected_output"}
+            for t in public["test_cases"]
+            if isinstance(t, dict)
+        ]
+    return public
