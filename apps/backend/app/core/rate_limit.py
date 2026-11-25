@@ -36,3 +36,16 @@ async def rate_limit_ai(user_id: str) -> None:
         raise RateLimitError(
             f"AI機能のリクエスト上限に達しました（{settings.AI_RATE_LIMIT_PER_HOUR}回/時間）"
         )
+
+
+async def rate_limit_runner(user_id: str) -> None:
+    """コード実行 (実行・提出) のレート制限。"""
+    r = await get_redis()
+    key = f"ratelimit:runner:{user_id}:minute"
+    count = await r.incr(key)
+    if count == 1:
+        await r.expire(key, 60)
+    if count > settings.RUNNER_RATE_LIMIT_PER_MINUTE:
+        raise RateLimitError(
+            f"コード実行の上限に達しました（{settings.RUNNER_RATE_LIMIT_PER_MINUTE}回/分）"
+        )

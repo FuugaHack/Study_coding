@@ -66,6 +66,9 @@ docker compose run --rm backend python -m scripts.seed
 # backend (docker compose の db を使用。learning_platform_test DB を自動作成)
 docker compose exec backend pytest
 
+# コード実行ランナー (隔離された runner コンテナの中で実行する)
+docker compose exec runner pytest -q tests
+
 # frontend
 npm run typecheck --workspace apps/frontend
 npm run build --workspace apps/frontend
@@ -80,11 +83,13 @@ CI (`.github/workflows/ci.yml`) でも同じものが PR ごとに実行され�
 - [docs/expansion/03-roadmap.md](docs/expansion/03-roadmap.md) — ロードマップ
 - [docs/expansion/m1-design.md](docs/expansion/m1-design.md) — M1 詳細設計 (学習エンジン + ゲーミフィケーション)
 - [docs/expansion/m2-design.md](docs/expansion/m2-design.md) — M2 詳細設計 (バッジ / ステージマップ / 飛び級 / ボス戦)
+- [docs/expansion/m3-design.md](docs/expansion/m3-design.md) — M3 詳細設計 (コード実行サンドボックス / AI レビュー / 段階ヒント)
 
-学習コンテンツ (カタログ) は `apps/backend/app/content/catalog.json` で管理しています。
+学習コンテンツは `apps/backend/app/content/catalog.json` (クイズ) と `coding.json` (コーディング問題) で管理しています。
+コーディング問題の模範解答は、`docker compose exec backend pytest tests/test_coding_content.py` で実際にランナー上で実行して検証されます。
 問題を追加・修正したら `docker compose exec backend pytest tests/test_domain.py` で検証してください。
 
 ## 環境変数
 
 - `apps/frontend/.env` — `VITE_API_BASE_URL`
-- `apps/backend/.env`  — `APP_TIMEZONE` (既定 Asia/Tokyo), `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, AWS 関連
+- `apps/backend/.env`  — `APP_TIMEZONE` (既定 Asia/Tokyo), `AI_REVIEW_ENABLED` (AWS の認証情報がない環境では false 推奨), `RUNNER_TOKEN` (本番では必ず変更), `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, AWS 関連

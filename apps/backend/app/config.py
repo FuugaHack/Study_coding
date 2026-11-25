@@ -29,6 +29,14 @@ class Settings(BaseSettings):
     # 学習日付の境界 (ストリーク・デイリークエスト)
     APP_TIMEZONE: str = "Asia/Tokyo"
 
+    # コード実行ランナー (apps/runner)
+    RUNNER_SOCKET: str = "/sock/runner.sock"
+    RUNNER_TOKEN: str = "change-me-runner-token"
+    RUNNER_RATE_LIMIT_PER_MINUTE: int = 20
+
+    # AI レビュー。false にすると AI 機能は 503 を返す (認証情報がない開発環境など)
+    AI_REVIEW_ENABLED: bool = True
+
     # Rate Limiting
     AI_RATE_LIMIT_PER_MINUTE: int = 10
     AI_RATE_LIMIT_PER_HOUR: int = 100

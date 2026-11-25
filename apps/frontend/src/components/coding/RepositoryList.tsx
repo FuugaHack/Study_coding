@@ -1,16 +1,21 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
+import type { CodingRepositorySummary } from "@learning-platform/shared-types";
+import { listCodingRepositories } from "@/api/coding";
+import { ErrorState, LoadingState } from "@/components/common/LoadingState";
+import { getErrorMessage } from "@/lib/api";
 import {
-  CODING_REPOSITORIES,
-  CODING_QUESTIONS,
-  FRAMEWORK_LABEL,
   LANGUAGE_ICON,
   LANGUAGE_LABEL,
-} from "@/data/codingCatalog";
-import type { CodingRepository, Language } from "@/types/coding";
+  frameworkLabel,
+  languageIcon,
+  languageLabel,
+} from "@/lib/codingLabels";
+import type { Language } from "@/types/coding";
 
 type Props = {
-  onSelect: (repo: CodingRepository) => void;
+  onSelect: (repo: CodingRepositorySummary) => void;
 };
 
 const LANGUAGE_FILTER_OPTIONS: Array<Language | "all"> = [
@@ -29,17 +34,14 @@ export function RepositoryList({ onSelect }: Props) {
   const [search, setSearch] = useState("");
   const [language, setLanguage] = useState<Language | "all">("all");
 
-  const issueCountByRepo = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const q of CODING_QUESTIONS) {
-      map.set(q.repositoryId, (map.get(q.repositoryId) ?? 0) + 1);
-    }
-    return map;
-  }, []);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["coding", "repositories"],
+    queryFn: listCodingRepositories,
+  });
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return CODING_REPOSITORIES.filter((r) => {
+    return (data?.repositories ?? []).filter((r) => {
       if (language !== "all" && r.language !== language) return false;
       if (q) {
         const hay = `${r.name} ${r.description} ${r.tags.join(" ")}`.toLowerCase();
@@ -47,7 +49,10 @@ export function RepositoryList({ onSelect }: Props) {
       }
       return true;
     });
-  }, [search, language]);
+  }, [data, search, language]);
+
+  if (isLoading) return <LoadingState />;
+  if (error) return <ErrorState message={getErrorMessage(error)} />;
 
   return (
     <div className="-mx-4 -my-6 min-h-[calc(100vh-3.5rem)] bg-[#0d1117] text-slate-200">
@@ -65,7 +70,7 @@ export function RepositoryList({ onSelect }: Props) {
             学びたい技術を選ぼう
           </h1>
           <p className="mt-1 text-sm text-slate-400">
-            Repository を選ぶように、学びたい言語・フレームワークを選択できます。将来的にはAIがあなたに合わせた Issue 形式の問題を自動生成します。
+            Repository を選ぶように、学びたい言語・フレームワークを選択できます。Python / JavaScript / TypeScript の問題は、書いたコードを実際に実行してテストで採点します。
           </p>
         </header>
 
@@ -116,13 +121,11 @@ export function RepositoryList({ onSelect }: Props) {
           <h2 className="text-base font-semibold text-white">
             Repositories <span className="ml-1 text-xs text-slate-500">({filtered.length})</span>
           </h2>
-          <div className="text-[11px] text-slate-500">最終更新順</div>
         </div>
 
         {/* cards */}
         <ul className="mt-3 space-y-3">
           {filtered.map((repo, i) => {
-            const issues = issueCountByRepo.get(repo.id) ?? 0;
             return (
               <li
                 key={repo.id}
@@ -138,7 +141,7 @@ export function RepositoryList({ onSelect }: Props) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-lg leading-none">
-                          {LANGUAGE_ICON[repo.language]}
+                          {languageIcon(repo.language)}
                         </span>
                         <h3 className="truncate text-sm font-semibold text-indigo-300 group-hover:underline">
                           {repo.name}
@@ -149,14 +152,17 @@ export function RepositoryList({ onSelect }: Props) {
                       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-400">
                         <span className="inline-flex items-center gap-1">
                           <LanguageDot language={repo.language} />
-                          {LANGUAGE_LABEL[repo.language]}
+                          {languageLabel(repo.language)}
                         </span>
                         {repo.framework && (
-                          <span>Framework: {FRAMEWORK_LABEL[repo.framework]}</span>
+                          <span>Framework: {frameworkLabel(repo.framework)}</span>
                         )}
-                        <span>Issues: {issues}</span>
-                        <span>Difficulty: {repo.difficultyRange}</span>
-                        <span>Updated {repo.lastUpdated}</span>
+                        <span>Issues: {repo.question_count}</span>
+                        <span>
+                          自動採点: {repo.executable_count} / {repo.question_count}
+                        </span>
+                        <span>Solved: {repo.solved_count}</span>
+                        <span>Difficulty: {repo.difficulty_range}</span>
                       </div>
                       <div className="mt-2 flex flex-wrap gap-1">
                         {repo.tags.map((t) => (
@@ -189,7 +195,7 @@ export function RepositoryList({ onSelect }: Props) {
   );
 }
 
-function StatusPill({ status }: { status: CodingRepository["status"] }) {
+function StatusPill({ status }: { status: string }) {
   if (status === "wip") {
     return (
       <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-300">
@@ -204,7 +210,7 @@ function StatusPill({ status }: { status: CodingRepository["status"] }) {
   );
 }
 
-function LanguageDot({ language }: { language: Language }) {
+function LanguageDot({ language }: { language: string }) {
   const cls: Record<Language, string> = {
     javascript: "bg-yellow-400",
     typescript: "bg-blue-400",
@@ -215,5 +221,5 @@ function LanguageDot({ language }: { language: Language }) {
     go: "bg-cyan-400",
     java: "bg-rose-400",
   };
-  return <span className={clsx("inline-block h-2 w-2 rounded-full", cls[language])} />;
+  return <span className={clsx("inline-block h-2 w-2 rounded-full", cls[language as Language] ?? "bg-slate-400")} />;
 }

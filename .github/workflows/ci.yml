@@ -9,7 +9,24 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # docker-compose.yml の runner サービスと同じ隔離設定
+  RUNNER_DOCKER_FLAGS: >-
+    --network none --read-only --tmpfs /tmp:size=64m,mode=1777 --init
+    --cap-drop ALL --cap-add SETUID --cap-add SETGID --cap-add CHOWN --cap-add KILL
+    --cap-add DAC_OVERRIDE --cap-add FOWNER --security-opt no-new-privileges:true
+    --pids-limit 128 --memory 512m --cpus 1 -e RUNNER_TOKEN=ci-runner-token
+
 jobs:
+  runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build runner image
+        run: docker build -t study-runner apps/runner
+      - name: Sandbox tests (inside the isolated container)
+        run: docker run --rm $RUNNER_DOCKER_FLAGS -e RUNNER_SANDBOXED=1 study-runner pytest -q tests
+
   backend:
     runs-on: ubuntu-latest
     services:
@@ -23,12 +40,18 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U postgres"
           --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
     defaults:
       run:
         working-directory: apps/backend
     env:
       DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/learning_platform
       TEST_DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/learning_platform_test
+      TEST_REDIS_URL: redis://localhost:6379/15
+      RUNNER_SOCKET: /tmp/runner-sock/runner.sock
+      RUNNER_TOKEN: ci-runner-token
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,20 +60,35 @@ jobs:
           cache: pip
           cache-dependency-path: apps/backend/pyproject.toml
       - run: pip install ".[dev]"
+      # コーディング問題のコンテンツ検証 (模範解答が全テストに通るか) に本物のランナーを使う
+      - name: Start runner
+        run: |
+          docker build -t study-runner ../runner
+          mkdir -p /tmp/runner-sock
+          docker run -d --name runner $RUNNER_DOCKER_FLAGS -v /tmp/runner-sock:/sock study-runner
+          for i in $(seq 1 30); do [ -S /tmp/runner-sock/runner.sock ] && break; sleep 1; done
+          test -S /tmp/runner-sock/runner.sock
       # 既存コードには未対応の lint 違反があるため、M1 以降に追加したモジュールのみ対象 (Issue: lint 全体適用)
       - name: Lint (new modules)
         run: >-
           ruff check app/content app/domain app/models/gamification.py
           app/repositories/gamification_repository.py app/services/catalog_service.py
           app/services/gamification_service.py app/services/challenge_service.py
+          app/services/coding_service.py app/services/runner_client.py app/services/llm.py
+          app/repositories/coding_repository.py
           app/schemas/catalog.py app/schemas/gamification.py app/schemas/challenge.py
+          app/schemas/coding.py
           app/api/v1/catalog.py app/api/v1/gamification.py app/api/v1/challenges.py
+          app/api/v1/coding.py
           app/db/migrations/versions/0002_gamification.py
-          app/db/migrations/versions/0003_gamification_m2.py tests
+          app/db/migrations/versions/0003_gamification_m2.py
+          app/db/migrations/versions/0004_coding.py tests
       - name: Migrations apply cleanly
         run: alembic upgrade head
       - name: Tests
         run: pytest -q
+      - name: Content validation must not be skipped
+        run: pytest -q tests/test_coding_content.py -rs | tee /tmp/content.txt && ! grep -q SKIPPED /tmp/content.txt
 
   frontend:
     runs-on: ubuntu-latest
