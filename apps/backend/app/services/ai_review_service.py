@@ -81,5 +81,5 @@ async def run_ai_review_task(ctx) -> dict:
 ```{language}
 {data.get("code", "")}
 ```"""
-    response = await ctx.complete(TASK_TYPE, system_prompt, user_message, temperature=0.3)
+    response = await ctx.complete(TASK_TYPE, system_prompt, user_message)
     return {"review": response.text}

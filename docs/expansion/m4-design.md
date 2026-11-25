@@ -167,7 +167,15 @@ docker compose exec backend python -m app.cli usage --days 7
 - ワーカーはタスク ID・種類・試行回数・所要時間・トークン数・費用をログに出す。
 - **ユーザーのコード・プロンプト・LLM の出力はログに出さない** (個人の回答内容のため)。
 
-## 7. 設定値
+## 7. LLM の呼び出し (Bedrock)
+
+- Anthropic SDK の `AsyncAnthropicBedrockMantle` で Claude in Amazon Bedrock (`bedrock-mantle` エンドポイント、Messages API 形式) を呼ぶ。旧実装の boto3 `invoke_model` (`bedrock-runtime`) からの置き換え。
+- 既定モデルは `anthropic.claude-opus-5-5`。思考は常に有効で、深さは `AI_EFFORT` (既定 medium) で調整する。`temperature` などのサンプリング設定は現行モデルでは 400 になるため送らない。
+- SDK の再試行は 0 回にし、再試行はワーカーに任せる (呼び出しごとに使用量を記録するため)。
+- エラーの扱い: 401 / 403 / 404 / 400 と認証情報なしは「設定の誤り」として再試行せずに失敗にする。429 / 5xx / 通信失敗は再試行する。`stop_reason` が `refusal` / `max_tokens` のときは出力不正として再試行する。
+- 入力トークン数にはキャッシュの読み書き分も含める (費用はやや多めに見積もられる)。
+
+## 8. 設定値
 
 | 変数 | 既定 | 説明 |
 |---|---|---|
@@ -175,7 +183,10 @@ docker compose exec backend python -m app.cli usage --days 7
 | `AI_WORKER_POLL_INTERVAL_S` | 1.0 | 空のときの待ち時間 |
 | `AI_TASK_TIMEOUT_S` | 180 | 1 タスクの制限時間 (`locked_until` にも使う) |
 | `AI_TASK_MAX_ATTEMPTS` | 3 | 再試行を含む最大実行回数 |
-| `AI_PRICE_INPUT_PER_MTOK` / `AI_PRICE_OUTPUT_PER_MTOK` | 3.0 / 15.0 | 単価 (USD / 100 万トークン) |
+| `BEDROCK_MODEL_ID` | anthropic.claude-opus-5-5 | Bedrock のモデル ID |
+| `BEDROCK_MAX_TOKENS` | 16000 | 出力の上限 (思考を含む) |
+| `AI_EFFORT` | medium | 思考の深さ |
+| `AI_PRICE_INPUT_PER_MTOK` / `AI_PRICE_OUTPUT_PER_MTOK` | 4.0 / 20.0 | 単価 (USD / 100 万トークン)。Bedrock の価格に合わせる |
 | `AI_USER_DAILY_TOKEN_LIMIT` | 200000 | ユーザーごとの 1 日の上限 |
 | `AI_GLOBAL_DAILY_COST_LIMIT_USD` | 10.0 | 全体の 1 日の上限 |
 | `LOG_FORMAT` / `LOG_LEVEL` | json / INFO | ログ |

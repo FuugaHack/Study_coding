@@ -14,8 +14,12 @@ class Settings(BaseSettings):
 
     # AWS
     AWS_REGION: str = "ap-northeast-1"
-    BEDROCK_MODEL_ID: str = "anthropic.claude-sonnet-4-20250514-v1:0"
-    BEDROCK_MAX_TOKENS: int = 4096
+    # Claude in Amazon Bedrock (bedrock-mantle) のモデル ID。anthropic. の接頭辞が付く
+    BEDROCK_MODEL_ID: str = "anthropic.claude-opus-5-5"
+    # 出力の上限 (思考を含む)。現行モデルは思考が常に有効なので小さくしすぎない
+    BEDROCK_MAX_TOKENS: int = 16000
+    # 思考の深さ: low / medium / high / xhigh / max
+    AI_EFFORT: str = "medium"
 
     # Auth
     JWT_SECRET_KEY: str = "change-me-in-production"
@@ -44,8 +48,10 @@ class Settings(BaseSettings):
     AI_TASK_MAX_ATTEMPTS: int = 3
 
     # AI の費用計測と利用上限 (単価は USD / 100 万トークン)
-    AI_PRICE_INPUT_PER_MTOK: float = 3.0
-    AI_PRICE_OUTPUT_PER_MTOK: float = 15.0
+    # 既定値は Claude Opus 5.5 の Anthropic 公開価格。
+    # Bedrock の価格 (リージョン指定のエンドポイントは +10%) に合わせて設定する
+    AI_PRICE_INPUT_PER_MTOK: float = 4.0
+    AI_PRICE_OUTPUT_PER_MTOK: float = 20.0
     AI_USER_DAILY_TOKEN_LIMIT: int = 200_000
     AI_GLOBAL_DAILY_COST_LIMIT_USD: float = 10.0
 

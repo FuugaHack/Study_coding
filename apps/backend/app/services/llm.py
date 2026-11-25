@@ -37,9 +37,7 @@ class LLMResponse:
 
 
 class LLMClient(Protocol):
-    async def complete(
-        self, system_prompt: str, user_message: str, *, temperature: float = 0.3
-    ) -> LLMResponse: ...
+    async def complete(self, system_prompt: str, user_message: str) -> LLMResponse: ...
 
 
 JSON_ONLY_SUFFIX = "\n\nYou MUST respond with valid JSON only. No markdown fences, no explanation."
@@ -59,26 +57,86 @@ def parse_json_output(text: str) -> dict:
     return data
 
 
+class AIConfigurationError(AIUnavailableError):
+    """認証情報・モデルの利用許可・モデル ID などの設定の誤り。再試行しても直らない。"""
+
+    def __init__(self, reason: str):
+        super().__init__()
+        self.reason = reason
+
+
 class BedrockLLMClient:
-    """Amazon Bedrock (Claude) を呼ぶ。"""
+    """Claude in Amazon Bedrock (bedrock-mantle エンドポイント) を Anthropic SDK で呼ぶ。
 
-    async def complete(
-        self, system_prompt: str, user_message: str, *, temperature: float = 0.3
-    ) -> LLMResponse:
-        if not settings.AI_REVIEW_ENABLED:
-            raise AIUnavailableError("この環境では AI 機能が無効になっています")
-        # boto3 の初期化は認証情報の解決を伴うため、実際に使うときだけ行う
-        from app.services.bedrock_service import BedrockService
+    認証は SDK が解決する: AWS_BEARER_TOKEN_BEDROCK (Bedrock API キー) が優先され、
+    なければ AWS の認証情報チェーン (AWS_ACCESS_KEY_ID など) を使う。
+    再試行はワーカーが行うので SDK の再試行は 0 回 (呼び出しごとに使用量を記録するため)。
+    """
 
-        try:
-            service = BedrockService()
-            return await service.invoke_full(
-                system_prompt=system_prompt, user_message=user_message, temperature=temperature
+    def __init__(self, client=None):
+        self._client = client
+
+    def _get_client(self):
+        if self._client is None:
+            from anthropic import AsyncAnthropicBedrockMantle
+
+            self._client = AsyncAnthropicBedrockMantle(
+                aws_region=settings.AWS_REGION,
+                max_retries=0,
+                timeout=settings.AI_TASK_TIMEOUT_S * 0.8,
             )
-        except Exception as e:  # 認証情報なし・スロットリング・通信失敗など
+        return self._client
+
+    async def complete(self, system_prompt: str, user_message: str) -> LLMResponse:
+        import anthropic
+
+        if not settings.AI_REVIEW_ENABLED:
+            raise AIConfigurationError("AI_REVIEW_ENABLED=false")
+        try:
+            # 現行モデルは temperature などのサンプリング設定を受け付けない (400)。
+            # 思考は常に有効で、深さは effort で調整する
+            response = await self._get_client().messages.create(
+                model=settings.BEDROCK_MODEL_ID,
+                max_tokens=settings.BEDROCK_MAX_TOKENS,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_message}],
+                output_config={"effort": settings.AI_EFFORT},
+            )
+        except (
+            anthropic.AuthenticationError,
+            anthropic.PermissionDeniedError,
+            anthropic.NotFoundError,
+            anthropic.BadRequestError,
+        ) as e:
+            raise AIConfigurationError(f"{type(e).__name__}: status={e.status_code}") from e
+        except (anthropic.APIStatusError, anthropic.APIConnectionError) as e:
+            # 429 / 5xx / 通信失敗: 一時的なのでワーカーが再試行する
             logger.warning("llm_call_failed", error=type(e).__name__)
             raise AIUnavailableError() from e
+        except Exception as e:  # 認証情報が見つからない (SigV4 の署名ができない) など
+            # SDK のメッセージに秘密情報は含まれない (認証情報が見つからない旨など)
+            raise AIConfigurationError(f"{type(e).__name__}: {str(e)[:200]}") from e
+
+        if response.stop_reason == "refusal":
+            raise AIOutputError("AI が応答を拒否しました")
+        if response.stop_reason == "max_tokens":
+            raise AIOutputError("AI の出力が上限で途中終了しました")
+        # 思考ブロックは除き、本文 (text) だけを使う
+        text = "".join(b.text for b in response.content if b.type == "text")
+        usage = response.usage
+        input_tokens = (
+            usage.input_tokens
+            + (getattr(usage, "cache_creation_input_tokens", None) or 0)
+            + (getattr(usage, "cache_read_input_tokens", None) or 0)
+        )
+        return LLMResponse(text, input_tokens, usage.output_tokens, response.model)
+
+
+_bedrock_client: BedrockLLMClient | None = None
 
 
 def get_llm_client() -> LLMClient:
-    return BedrockLLMClient()
+    global _bedrock_client
+    if _bedrock_client is None:
+        _bedrock_client = BedrockLLMClient()
+    return _bedrock_client

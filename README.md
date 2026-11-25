@@ -101,7 +101,19 @@ docker compose exec backend python -m app.cli questions enqueue               # 
 docker compose exec backend python -m app.cli questions report --output r.md  # レビュー結果のレポート
 docker compose exec backend python -m app.cli questions dismiss <id> --note "理由"  # AI の指摘を対応不要にする
 docker compose exec backend python -m app.cli usage --days 7                  # AI の使用量と費用
+docker compose exec backend python -m app.cli ai check                        # Bedrock の接続確認 (1 回だけ課金される)
 ```
+
+#### Bedrock (Claude) の設定
+
+AI 機能は Claude in Amazon Bedrock (`bedrock-mantle` エンドポイント) を Anthropic SDK で呼びます。既定のモデルは `anthropic.claude-opus-5-5`、リージョンは `AWS_REGION` (既定 ap-northeast-1) です。
+
+1. AWS コンソールの [Amazon Bedrock model access](https://console.aws.amazon.com/bedrock/home#/modelaccess) で、使うモデル (Claude Opus 5.5) を利用可能にする
+2. 認証情報を `apps/backend/.env` に設定する (どちらか)
+   - Amazon Bedrock API キー: `AWS_BEARER_TOKEN_BEDROCK=...` (IAM 権限 `bedrock-mantle:CallWithBearerToken` と `bedrock-mantle:CreateInference` が必要)
+   - IAM の認証情報: `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (権限 `bedrock-mantle:CreateInference`)
+3. `docker compose up -d --force-recreate backend worker` で反映し、`python -m app.cli ai check` で確認する
+4. `AI_PRICE_INPUT_PER_MTOK` / `AI_PRICE_OUTPUT_PER_MTOK` を Bedrock の価格に合わせる (費用の計算と上限に使う)
 
 ## 環境変数
 

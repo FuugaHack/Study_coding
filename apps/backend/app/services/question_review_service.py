@@ -170,7 +170,6 @@ async def run_question_review_task(ctx) -> dict:
         TASK_TYPE,
         qq.build_system_prompt(),
         qq.build_user_message(course, q, similar),
-        temperature=0.2,
     )
     review = qq.QuestionQualityReview.model_validate(parse_json_output(response.text))
     status, result = qq.apply_quality_guard(review)

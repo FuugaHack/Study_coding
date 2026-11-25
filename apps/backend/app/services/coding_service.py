@@ -398,7 +398,7 @@ async def run_code_review_task(ctx) -> dict:
         passed = submission.passed
 
     # LLM の呼び出し (数秒〜数十秒) の間は DB のロックもセッションも持たない
-    response = await ctx.complete(CODE_REVIEW_TASK, cr.build_system_prompt(), user_message, 0.2)
+    response = await ctx.complete(CODE_REVIEW_TASK, cr.build_system_prompt(), user_message)
     review = cr.CodeReview.model_validate(parse_json_output(response.text))
     review = cr.apply_objective_guard(review, passed)
 

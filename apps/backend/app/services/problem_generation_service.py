@@ -174,9 +174,7 @@ async def run_problem_generation_task(ctx) -> dict:
                 f"\n元の問題:\n{json.dumps(source_content, ensure_ascii=False)}"
             )
 
-    response = await ctx.complete(
-        TASK_TYPE, system_prompt + JSON_ONLY_SUFFIX, user_message, temperature=0.8
-    )
+    response = await ctx.complete(TASK_TYPE, system_prompt + JSON_ONLY_SUFFIX, user_message)
     content = parse_json_output(response.text)
     if not validate_generated(content, problem_type):
         raise AIOutputError("生成された問題のバリデーションに失敗しました")

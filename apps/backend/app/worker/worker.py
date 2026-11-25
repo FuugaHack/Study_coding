@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.config import settings
 from app.core.logging import get_logger
 from app.services.ai_usage import BudgetExceededError, MeteredLLM
-from app.services.llm import AIOutputError, AIUnavailableError, LLMClient
+from app.services.llm import AIConfigurationError, AIOutputError, AIUnavailableError, LLMClient
 from app.worker import queue
 from app.worker.queue import ClaimedTask
 
@@ -37,16 +37,13 @@ class TaskContext:
     session_factory: async_sessionmaker[AsyncSession]
     llm: MeteredLLM
 
-    async def complete(
-        self, purpose: str, system_prompt: str, user_message: str, temperature: float = 0.3
-    ):
+    async def complete(self, purpose: str, system_prompt: str, user_message: str):
         return await self.llm.complete(
             purpose=purpose,
             user_id=self.task.user_id,
             task_id=self.task.id,
             system_prompt=system_prompt,
             user_message=user_message,
-            temperature=temperature,
         )
 
 
@@ -115,6 +112,10 @@ class Worker:
             return {}, e.message, False
         except BudgetExceededError as e:
             return {}, e.detail, False
+        except AIConfigurationError as e:
+            # 認証情報・モデルの利用許可・モデル ID の誤りなど。再試行しても直らない
+            logger.error("llm_misconfigured", error=e.reason)
+            return {}, GENERIC_FAILURE, False
         except (AIUnavailableError, AIOutputError, ValidationError, TimeoutError) as e:
             logger.warning("task_retryable_error", error=type(e).__name__)
             return {}, GENERIC_FAILURE, True

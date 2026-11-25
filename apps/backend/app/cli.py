@@ -97,6 +97,29 @@ def cmd_usage(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_ai_check(_: argparse.Namespace) -> int:
+    """Bedrock に短いリクエストを 1 回送り、認証情報とモデルの利用許可を確かめる (課金される)。"""
+    from app.config import settings
+    from app.services.ai_usage import cost_usd
+    from app.services.llm import AIConfigurationError, AIUnavailableError, BedrockLLMClient
+
+    _print(f"リージョン: {settings.AWS_REGION} / モデル: {settings.BEDROCK_MODEL_ID}")
+    try:
+        res = asyncio.run(BedrockLLMClient().complete("1 語で答えてください。", "日本の首都は?"))
+    except AIConfigurationError as e:
+        _print(f"失敗 (設定の誤り): {e.reason}")
+        return 1
+    except AIUnavailableError:
+        _print("失敗 (一時的なエラー)。時間をおいて再実行してください")
+        return 1
+    _print(f"応答: {res.text.strip()[:100]}")
+    _print(
+        f"トークン: 入力 {res.input_tokens} / 出力 {res.output_tokens} "
+        f"(約 {cost_usd(res.input_tokens, res.output_tokens):.4f} USD)"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="group", required=True)
@@ -117,6 +140,11 @@ def build_parser() -> argparse.ArgumentParser:
     dismiss.add_argument("review_id")
     dismiss.add_argument("--note", required=True)
     dismiss.set_defaults(func=cmd_dismiss)
+
+    ai = sub.add_parser("ai", help="AI (Bedrock) の接続確認")
+    ai.add_subparsers(dest="command", required=True).add_parser(
+        "check", help="短いリクエストを 1 回送る (課金される)"
+    ).set_defaults(func=cmd_ai_check)
 
     usage = sub.add_parser("usage", help="AI の使用量と費用")
     usage.add_argument("--days", type=int, default=7)

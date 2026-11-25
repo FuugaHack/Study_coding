@@ -505,3 +505,18 @@ async def test_worker_reloads_catalog_for_updated_question(session_factory, monk
     assert llm.calls == 1
     async with session_factory() as db:
         assert await db.scalar(select(func.count()).select_from(QuestionReview)) == 1
+
+
+async def test_misconfiguration_fails_without_retry(
+    auth_client: AsyncClient, session_factory
+) -> None:
+    """認証情報やモデルの利用許可の誤りは再試行しても直らないので、すぐ失敗にする。"""
+    from app.services.llm import AIConfigurationError
+
+    body = {"code": "print(1)", "problem_description": "p", "language": "python"}
+    task_id = (await auth_client.post("/api/v1/ai/review", json=body)).json()["task_id"]
+    llm = FakeLLM(AIConfigurationError("AuthenticationError: status=401"))
+    await drain(session_factory, llm)
+    assert llm.calls == 1
+    status = (await auth_client.get(f"/api/v1/ai/review/{task_id}")).json()
+    assert status["status"] == "failed" and status["error_message"] == GENERIC

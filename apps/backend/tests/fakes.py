@@ -22,7 +22,7 @@ class FakeLLM:
         self.calls = 0
         self.messages: list[str] = []
 
-    async def complete(self, system_prompt, user_message, *, temperature=0.3) -> LLMResponse:
+    async def complete(self, system_prompt, user_message) -> LLMResponse:
         self.calls += 1
         self.messages.append(user_message)
         if isinstance(self.response, Exception):

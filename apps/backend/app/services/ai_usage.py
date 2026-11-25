@@ -147,13 +147,12 @@ class MeteredLLM:
         task_id: str | uuid.UUID | None,
         system_prompt: str,
         user_message: str,
-        temperature: float = 0.3,
     ) -> LLMResponse:
         async with self.session_factory() as db:
             await check_budget(db, user_id)
 
         async def call_and_record() -> LLMResponse:
-            response = await self.llm.complete(system_prompt, user_message, temperature=temperature)
+            response = await self.llm.complete(system_prompt, user_message)
             async with self.session_factory() as db:
                 usage = await record_usage(
                     db, user_id=user_id, task_id=task_id, purpose=purpose, response=response
