@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, UUIDPrimaryKeyMixin
 
 
-class ProgressStatus(str, enum.Enum):
+class ProgressStatus(enum.StrEnum):
     not_started = "not_started"
     in_progress = "in_progress"
     completed = "completed"

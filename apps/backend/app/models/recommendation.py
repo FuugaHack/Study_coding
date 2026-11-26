@@ -11,14 +11,14 @@ from app.models.base import Base, UUIDPrimaryKeyMixin
 from app.models.problem_attempt import ProblemSource
 
 
-class RecommendationType(str, enum.Enum):
+class RecommendationType(enum.StrEnum):
     retry = "retry"
     similar = "similar"
     weakness = "weakness"
     forgetting = "forgetting"
 
 
-class RecommendationStatus(str, enum.Enum):
+class RecommendationStatus(enum.StrEnum):
     pending = "pending"
     viewed = "viewed"
     attempted = "attempted"

@@ -10,7 +10,7 @@ from app.models.base import Base, UUIDPrimaryKeyMixin
 from app.models.lesson import Difficulty, LessonType
 
 
-class GenerationStatus(str, enum.Enum):
+class GenerationStatus(enum.StrEnum):
     pending = "pending"
     generating = "generating"
     completed = "completed"

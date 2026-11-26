@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, UUIDPrimaryKeyMixin
 
 
-class TaskStatus(str, enum.Enum):
+class TaskStatus(enum.StrEnum):
     pending = "pending"
     processing = "processing"
     completed = "completed"

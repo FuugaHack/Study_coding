@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from app.core.exceptions import NotFoundError
@@ -75,7 +75,7 @@ class RecommendationService:
         candidates = await self._calculate(user_id)
 
         # 上位をDB保存
-        expires = datetime.now(timezone.utc) + timedelta(hours=6)
+        expires = datetime.now(UTC) + timedelta(hours=6)
         for c in candidates[:20]:
             await self.recommendation_repo.save_recommendation(
                 user_id=user_id,
@@ -110,7 +110,7 @@ class RecommendationService:
         }
 
     async def _calculate(self, user_id: str) -> list[ScoredCandidate]:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         candidates: list[ScoredCandidate] = []
 
         incorrect, weakness_profile, stale = await asyncio.gather(
