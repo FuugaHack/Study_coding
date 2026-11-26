@@ -1,3 +1,5 @@
+from datetime import UTC
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -14,7 +16,7 @@ class CourseRepository:
     async def get_all_published(self) -> list[Course]:
         stmt = (
             select(Course)
-            .where(Course.is_published == True)
+            .where(Course.is_published.is_(True))
             .order_by(Course.sort_order)
         )
         result = await self.db.execute(stmt)
@@ -45,7 +47,7 @@ class CourseRepository:
     async def get_lessons_by_course(self, course_id: str) -> list[Lesson]:
         stmt = (
             select(Lesson)
-            .where(Lesson.course_id == course_id, Lesson.is_published == True)
+            .where(Lesson.course_id == course_id, Lesson.is_published.is_(True))
             .order_by(Lesson.sort_order)
         )
         result = await self.db.execute(stmt)
@@ -86,9 +88,9 @@ class CourseRepository:
         is_correct: bool,
     ) -> LessonProgress:
         progress = await self.get_lesson_progress(user_id, lesson_id)
-        from datetime import datetime, timezone
+        from datetime import datetime
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         if progress is None:
             progress = LessonProgress(
@@ -123,10 +125,10 @@ class CourseRepository:
         pct = (completed / total * 100) if total > 0 else 0
 
         course_progress = await self.get_course_progress(user_id, course_id)
-        from datetime import datetime, timezone
+        from datetime import datetime
         from decimal import Decimal
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         if course_progress is None:
             course_progress = CourseProgress(

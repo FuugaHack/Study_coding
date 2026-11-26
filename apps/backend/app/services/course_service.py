@@ -1,7 +1,7 @@
 from decimal import Decimal
 
-from app.core.exceptions import ConflictError, NotFoundError
 from app.content.coding import EXECUTABLE_LANGUAGES
+from app.core.exceptions import ConflictError, NotFoundError
 from app.domain import gamification as g
 from app.models.progress import ProgressStatus
 from app.repositories.attempt_repository import AttemptRepository
@@ -83,18 +83,18 @@ class CourseService:
 
         lesson_responses = [
             LessonResponse(
-                id=str(l.id),
-                course_id=str(l.course_id),
-                title=l.title,
-                description=l.description,
-                lesson_type=l.lesson_type.value,
-                difficulty=l.difficulty.value,
-                sort_order=l.sort_order,
-                tags=l.tags or [],
-                max_score=l.max_score,
-                pass_score=l.pass_score,
+                id=str(lesson.id),
+                course_id=str(lesson.course_id),
+                title=lesson.title,
+                description=lesson.description,
+                lesson_type=lesson.lesson_type.value,
+                difficulty=lesson.difficulty.value,
+                sort_order=lesson.sort_order,
+                tags=lesson.tags or [],
+                max_score=lesson.max_score,
+                pass_score=lesson.pass_score,
             )
-            for l in lessons
+            for lesson in lessons
         ]
 
         progress_responses = {

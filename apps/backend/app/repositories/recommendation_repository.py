@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 
 from sqlalchemy import and_, select, update
@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.recommendation import (
     RecommendationStatus,
-    RecommendationType,
     ReviewRecommendation,
 )
 
@@ -26,7 +25,7 @@ class RecommendationRepository:
             ReviewRecommendation.status == RecommendationStatus.pending,
         ]
         # 期限切れを除外
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         conditions.append(
             (ReviewRecommendation.expires_at.is_(None))
             | (ReviewRecommendation.expires_at > now)
@@ -72,7 +71,7 @@ class RecommendationRepository:
         return rec
 
     async def dismiss(self, recommendation_id: str, user_id: str) -> bool:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         stmt = (
             update(ReviewRecommendation)
             .where(
@@ -85,7 +84,7 @@ class RecommendationRepository:
         return result.rowcount > 0
 
     async def mark_attempted(self, recommendation_id: str, user_id: str) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         stmt = (
             update(ReviewRecommendation)
             .where(
@@ -98,7 +97,7 @@ class RecommendationRepository:
 
     async def delete_expired(self) -> int:
         """期限切れレコメンドを削除（バッチ用）"""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         stmt = (
             update(ReviewRecommendation)
             .where(

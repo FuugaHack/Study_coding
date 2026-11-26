@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from sqlalchemy import and_, select
@@ -80,7 +80,7 @@ class AttemptRepository:
     ) -> list[ProblemAttempt]:
         conditions = [
             ProblemAttempt.user_id == user_id,
-            ProblemAttempt.is_correct == False,
+            ProblemAttempt.is_correct.is_(False),
         ]
         if since:
             conditions.append(ProblemAttempt.attempted_at >= since)
@@ -98,13 +98,13 @@ class AttemptRepository:
         user_id: str,
         days_threshold: int = 7,
     ) -> list[ProblemAttempt]:
-        threshold = datetime.now(timezone.utc) - timedelta(days=days_threshold)
+        threshold = datetime.now(UTC) - timedelta(days=days_threshold)
         stmt = (
             select(ProblemAttempt)
             .where(
                 and_(
                     ProblemAttempt.user_id == user_id,
-                    ProblemAttempt.is_correct == True,
+                    ProblemAttempt.is_correct.is_(True),
                     ProblemAttempt.attempted_at < threshold,
                 )
             )
@@ -139,7 +139,7 @@ class AttemptRepository:
         )
         result = await self.db.execute(stmt)
         profile = result.scalar_one_or_none()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         if profile is None:
             profile = UserWeaknessProfile(

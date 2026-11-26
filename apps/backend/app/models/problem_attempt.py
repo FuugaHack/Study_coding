@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, UUIDPrimaryKeyMixin
 
 
-class ProblemSource(str, enum.Enum):
+class ProblemSource(enum.StrEnum):
     fixed = "fixed"
     generated = "generated"
 

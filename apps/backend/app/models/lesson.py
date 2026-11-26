@@ -8,13 +8,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 
-class LessonType(str, enum.Enum):
+class LessonType(enum.StrEnum):
     quiz = "quiz"
     coding = "coding"
     reading = "reading"
 
 
-class Difficulty(str, enum.Enum):
+class Difficulty(enum.StrEnum):
     easy = "easy"
     medium = "medium"
     hard = "hard"

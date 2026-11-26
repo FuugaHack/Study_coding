@@ -1,9 +1,9 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.session import get_db
 from app.content.coding import get_coding_catalog
 from app.content.loader import get_catalog
+from app.db.session import get_db
 from app.repositories.attempt_repository import AttemptRepository
 from app.repositories.coding_repository import CodingRepository
 from app.repositories.course_repository import CourseRepository
@@ -23,7 +23,6 @@ from app.services.history_service import HistoryService
 from app.services.problem_generation_service import ProblemGenerationService
 from app.services.recommendation_service import RecommendationService
 from app.services.runner_client import RunnerClient
-
 
 # --- Repositories ---
 

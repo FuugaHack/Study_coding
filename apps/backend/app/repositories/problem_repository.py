@@ -1,10 +1,10 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.async_task import AsyncTask, TaskStatus
+from app.models.async_task import AsyncTask
 from app.models.generated_problem import GeneratedProblem, GenerationStatus
 from app.models.lesson import Lesson
 
@@ -75,7 +75,7 @@ class ProblemRepository:
         return result.scalar_one_or_none()
 
     async def update_task_status(self, task_id: str, status: str) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         values: dict = {"status": status}
         if status == "processing":
             values["started_at"] = now
@@ -89,7 +89,7 @@ class ProblemRepository:
         result_data: dict | None = None,
         error_message: str | None = None,
     ) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         values: dict = {"status": status, "completed_at": now}
         if result_data:
             values["result_data"] = result_data
