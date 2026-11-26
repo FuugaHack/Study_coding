@@ -2,6 +2,7 @@
   "name": "learning-platform",
   "private": true,
   "version": "0.1.0",
+  "packageManager": "npm@11.19.0",
   "workspaces": [
     "apps/frontend",
     "packages/*"
@@ -15,6 +16,7 @@
     "backend:test": "cd apps/backend && pytest"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "npm": ">=11.19.0 <12"
   }
 }

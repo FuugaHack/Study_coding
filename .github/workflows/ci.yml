@@ -86,6 +86,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # package.json の packageManager と揃える (lockfile の差分ノイズ防止)
+      - run: npm install -g npm@11.19.0
       - run: npm ci
       - name: Lint
         run: npm run lint --workspace apps/frontend

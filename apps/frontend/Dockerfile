@@ -1,11 +1,12 @@
 FROM node:20-alpine AS build
 WORKDIR /repo
 
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json .npmrc ./
 COPY apps/frontend/package.json ./apps/frontend/
 COPY packages/shared-types/package.json ./packages/shared-types/
 
-RUN npm install
+# package.json の packageManager と揃える
+RUN npm install -g npm@11.19.0 && npm ci
 
 COPY packages ./packages
 COPY apps/frontend ./apps/frontend
