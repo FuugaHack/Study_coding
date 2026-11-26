@@ -26,7 +26,7 @@ export function CoursesPage() {
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [level, setLevel] = useState<LevelFilter>("all");
 
-  const courses = data?.courses ?? [];
+  const courses = useMemo(() => data?.courses ?? [], [data]);
 
   const stats: CourseStats = useMemo(() => {
     return {
