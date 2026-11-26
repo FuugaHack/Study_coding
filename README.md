@@ -26,7 +26,12 @@ AIで個別最適化するプログラミング学習プラットフォーム。
 
 ## セットアップ
 
+npm は `package.json` の `packageManager` で **11.19.0** に固定しています (`.npmrc` の `engine-strict` により、違うメジャーでは install が失敗します)。バージョンが違う場合は先に揃えてください。
+
 ```bash
+# npm のバージョンを揃える
+npm install -g npm@11.19.0
+
 # フロントエンド依存
 npm install
 
