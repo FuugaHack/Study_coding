@@ -41,7 +41,7 @@ export function DailyQuests() {
           <div className="mt-1 text-4xl font-black">Lv {data.level}</div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/30">
             <div
-              className="h-full rounded-full bg-white transition-all duration-700"
+              className="h-full rounded-full bg-surface transition-all duration-700"
               style={{ width: `${levelPct}%` }}
             />
           </div>
@@ -80,8 +80,8 @@ function QuestCard({
   quests: QuestProgress[];
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900">
+    <div className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
+      <h2 className="text-lg font-semibold text-ink-900">
         <span aria-hidden>{icon}</span> {title}
       </h2>
       <ul className="mt-3 space-y-3">
@@ -93,13 +93,13 @@ function QuestCard({
                 <span
                   className={clsx(
                     "font-medium",
-                    q.completed ? "text-emerald-700" : "text-slate-800",
+                    q.completed ? "text-emerald-700 dark:text-emerald-300" : "text-ink-800",
                   )}
                 >
                   {q.completed ? "✅ " : ""}
                   {q.title}
                 </span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-ink-500">
                   {q.progress} / {q.target}・+{q.reward_xp} XP 🪙{q.reward_coins}
                 </span>
               </div>
@@ -109,7 +109,7 @@ function QuestCard({
                 aria-valuenow={q.progress}
                 aria-valuemin={0}
                 aria-valuemax={q.target}
-                className="mt-1 h-2 overflow-hidden rounded-full bg-slate-100"
+                className="mt-1 h-2 overflow-hidden rounded-full bg-surface-muted"
               >
                 <div
                   className={clsx(

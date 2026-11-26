@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth";
 import { GamificationBar } from "@/components/gamification/GamificationBar";
 import { RewardToaster } from "@/components/gamification/RewardToaster";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 
 type NavItem = {
   to: string;
@@ -35,9 +36,9 @@ export function AppLayout() {
 
   return (
     <div className="min-h-full flex flex-col">
-      <header className="bg-white border-b border-slate-200">
+      <header className="bg-surface border-b border-line">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-6">
-          <div className="font-semibold text-brand-700">Learning Platform</div>
+          <div className="font-semibold text-brand-700 dark:text-brand-300">Learning Platform</div>
           <nav className="flex gap-4 text-sm">
             {NAV.map((n) => (
               <NavLink
@@ -49,8 +50,8 @@ export function AppLayout() {
                     isActive
                       ? n.withAiBadge
                         ? "text-white bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-cyan-400 shadow motion-safe:animate-neon"
-                        : "text-brand-600 font-medium"
-                      : "text-slate-600 hover:text-brand-600",
+                        : "text-brand-600 dark:text-brand-400 font-medium"
+                      : "text-ink-600 hover:text-brand-600 dark:hover:text-brand-400",
                   )
                 }
               >
@@ -70,6 +71,7 @@ export function AppLayout() {
           <div className="ml-auto">
             <GamificationBar />
           </div>
+          <ThemeToggle />
           <button onClick={onLogout} className="btn-secondary">
             ログアウト
           </button>

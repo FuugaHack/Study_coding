@@ -33,13 +33,13 @@ export function CourseCard({ course, index }: Props) {
     <article
       aria-disabled={locked || undefined}
       className={clsx(
-        "course-card relative flex h-full flex-col overflow-hidden rounded-2xl border bg-white p-5 transition",
-        "border-slate-200 shadow-sm",
+        "course-card relative flex h-full flex-col overflow-hidden rounded-2xl border bg-surface p-5 transition",
+        "border-line shadow-sm",
         !locked &&
-          "motion-safe:hover:-translate-y-1 hover:shadow-lg hover:border-slate-300 cursor-pointer",
+          "motion-safe:hover:-translate-y-1 hover:shadow-lg hover:border-line-strong cursor-pointer",
         locked && "opacity-60 grayscale-[20%]",
         locked && (course.canTakePlacement ? "cursor-pointer" : "cursor-not-allowed"),
-        inProgress && !locked && "ring-1 ring-blue-200 course-card-glow",
+        inProgress && !locked && "ring-1 ring-blue-200 dark:ring-blue-500/30 course-card-glow",
       )}
     >
       <div
@@ -65,8 +65,8 @@ export function CourseCard({ course, index }: Props) {
         </div>
       </div>
 
-      <h2 className="mt-3 text-lg font-semibold text-slate-900">{course.title}</h2>
-      <p className="mt-1 text-sm text-slate-600 line-clamp-2">{course.description}</p>
+      <h2 className="mt-3 text-lg font-semibold text-ink-900">{course.title}</h2>
+      <p className="mt-1 text-sm text-ink-600 line-clamp-2">{course.description}</p>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {course.tags.map((t) => (
@@ -74,34 +74,34 @@ export function CourseCard({ course, index }: Props) {
         ))}
       </div>
 
-      <dl className="mt-4 grid grid-cols-3 gap-2 text-center text-[11px] text-slate-500">
-        <div className="rounded-lg bg-slate-50 py-1.5">
+      <dl className="mt-4 grid grid-cols-3 gap-2 text-center text-[11px] text-ink-500">
+        <div className="rounded-lg bg-surface-subtle py-1.5">
           <dt>正解済み</dt>
-          <dd className="text-sm font-semibold text-slate-800">{course.solvedCount}</dd>
+          <dd className="text-sm font-semibold text-ink-800">{course.solvedCount}</dd>
         </div>
-        <div className="rounded-lg bg-slate-50 py-1.5">
+        <div className="rounded-lg bg-surface-subtle py-1.5">
           <dt>問題</dt>
-          <dd className="text-sm font-semibold text-slate-800">{course.questionCount}</dd>
+          <dd className="text-sm font-semibold text-ink-800">{course.questionCount}</dd>
         </div>
-        <div className="rounded-lg bg-slate-50 py-1.5">
+        <div className="rounded-lg bg-surface-subtle py-1.5">
           <dt>目安</dt>
-          <dd className="text-sm font-semibold text-slate-800">
+          <dd className="text-sm font-semibold text-ink-800">
             {formatHours(course.estimatedHours)}
           </dd>
         </div>
       </dl>
 
       <div className="mt-4">
-        <div className="flex items-center justify-between text-[11px] text-slate-500">
+        <div className="flex items-center justify-between text-[11px] text-ink-500">
           <span>進捗</span>
-          <span className="font-medium text-slate-700">{pct}%</span>
+          <span className="font-medium text-ink-700">{pct}%</span>
         </div>
         <div
           role="progressbar"
           aria-valuenow={pct}
           aria-valuemin={0}
           aria-valuemax={100}
-          className="mt-1 h-2 overflow-hidden rounded-full bg-slate-100"
+          className="mt-1 h-2 overflow-hidden rounded-full bg-surface-muted"
         >
           <div
             className={clsx(
@@ -120,7 +120,7 @@ export function CourseCard({ course, index }: Props) {
             "rounded-full px-3 py-1.5 text-xs font-semibold transition",
             !locked && "motion-safe:group-hover:scale-105",
             locked
-              ? "bg-slate-100 text-slate-500"
+              ? "bg-surface-muted text-ink-500"
               : completed
                 ? "bg-emerald-500 text-white"
                 : "bg-brand-500 text-white",
@@ -132,7 +132,7 @@ export function CourseCard({ course, index }: Props) {
       </div>
 
       {locked && course.prerequisiteTitles.length > 0 && (
-        <p className="mt-2 text-[11px] text-slate-500">
+        <p className="mt-2 text-[11px] text-ink-500">
           🔓 解放条件: 「{course.prerequisiteTitles.join("」「")}」の 70% に正解
         </p>
       )}

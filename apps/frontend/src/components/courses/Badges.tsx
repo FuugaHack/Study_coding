@@ -26,7 +26,7 @@ export function StatusBadge({ status }: { status: CourseStatus }) {
       ? "bg-blue-500 animate-pulse-soft"
       : status === "completed"
         ? "bg-emerald-500"
-        : "bg-slate-400";
+        : "bg-ink-400";
   return (
     <span className={clsx(BASE, STATUS_BADGE_CLASS[status], "gap-1.5")}>
       <span className={clsx("h-1.5 w-1.5 rounded-full", dot)} />
@@ -37,7 +37,7 @@ export function StatusBadge({ status }: { status: CourseStatus }) {
 
 export function TagPill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-600">
+    <span className="inline-flex items-center rounded-md bg-surface-muted px-1.5 py-0.5 text-[11px] text-ink-600">
       #{children}
     </span>
   );

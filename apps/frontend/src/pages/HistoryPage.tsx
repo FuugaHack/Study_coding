@@ -26,19 +26,19 @@ export function HistoryPage() {
       {items.length === 0 ? (
         <EmptyState message="まだ提出した問題がありません" />
       ) : (
-        <div className="card divide-y divide-slate-200">
+        <div className="card divide-y divide-line">
           {items.map((a) => (
             <Link
               key={a.id}
               to={`/history/${a.id}`}
-              className="flex items-center gap-4 p-4 hover:bg-slate-50"
+              className="flex items-center gap-4 p-4 hover:bg-surface-hover"
             >
               <span
                 className={clsx(
                   "badge",
                   a.is_correct
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-red-100 text-red-700",
+                    ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                    : "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-300",
                 )}
               >
                 {a.is_correct ? "正解" : "不正解"}
@@ -47,12 +47,12 @@ export function HistoryPage() {
                 <div className="font-medium truncate">
                   {a.lesson_title ?? "生成問題"}
                 </div>
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-ink-500">
                   {new Date(a.attempted_at).toLocaleString("ja-JP")}
                 </div>
               </div>
-              <span className="badge bg-slate-100 text-slate-600">{a.problem_source}</span>
-              <span className="font-semibold text-slate-800">{a.score}点</span>
+              <span className="badge bg-surface-muted text-ink-600">{a.problem_source}</span>
+              <span className="font-semibold text-ink-800">{a.score}点</span>
             </Link>
           ))}
         </div>

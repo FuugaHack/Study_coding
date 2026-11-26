@@ -1,4 +1,5 @@
 import Editor from "@monaco-editor/react";
+import { useThemeStore } from "@/stores/theme";
 
 export function CodeEditor({
   value,
@@ -11,10 +12,12 @@ export function CodeEditor({
   language?: string;
   height?: number | string;
 }) {
+  const theme = useThemeStore((s) => s.resolved);
   return (
-    <div className="border border-slate-300 rounded-md overflow-hidden">
+    <div className="border border-line-strong rounded-md overflow-hidden">
       <Editor
         height={height}
+        theme={theme === "dark" ? "vs-dark" : "light"}
         defaultLanguage={language}
         language={language}
         value={value}

@@ -56,10 +56,10 @@ export function CoursesPage() {
     <div className="catalog-bg -mx-4 -my-6 min-h-[calc(100vh-3.5rem)] px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-6xl space-y-6">
         <header className="motion-safe:animate-fade-up">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
             コースを選んで学習を始めよう
           </h1>
-          <p className="mt-1 text-sm text-slate-600 sm:text-base">
+          <p className="mt-1 text-sm text-ink-600 sm:text-base">
             フロントエンド、バックエンド、AI、インフラまで楽しく学べます
           </p>
         </header>

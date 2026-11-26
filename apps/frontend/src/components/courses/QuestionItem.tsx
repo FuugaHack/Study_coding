@@ -23,10 +23,10 @@ const QUESTION_TYPE_LABEL: Record<QuestionType, string> = {
 };
 
 const QUESTION_TYPE_CLASS: Record<QuestionType, string> = {
-  choice: "bg-blue-100 text-blue-700",
-  "multiple-choice": "bg-purple-100 text-purple-700",
-  text: "bg-amber-100 text-amber-700",
-  code: "bg-emerald-100 text-emerald-700",
+  choice: "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300",
+  "multiple-choice": "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300",
+  text: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  code: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
 };
 
 const DIFFICULTY_LABEL: Record<Question["difficulty"], string> = {
@@ -36,16 +36,16 @@ const DIFFICULTY_LABEL: Record<Question["difficulty"], string> = {
 };
 
 const DIFFICULTY_CLASS: Record<Question["difficulty"], string> = {
-  easy: "bg-emerald-50 text-emerald-700",
-  normal: "bg-slate-100 text-slate-600",
-  hard: "bg-rose-50 text-rose-700",
+  easy: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  normal: "bg-surface-muted text-ink-600",
+  hard: "bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300",
 };
 
 export function QuestionItem({ index, total, question, onAdvance }: Props) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
       <header className="flex items-start gap-3">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-500/10 text-xs font-semibold text-brand-700 dark:text-brand-300">
           {index + 1}
         </span>
         <div className="flex-1">
@@ -67,14 +67,14 @@ export function QuestionItem({ index, total, question, onAdvance }: Props) {
               難易度: {DIFFICULTY_LABEL[question.difficulty]}
             </span>
             {question.solved && (
-              <span className="text-[11px] font-medium text-emerald-600">✓ 正解済み</span>
+              <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">✓ 正解済み</span>
             )}
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] text-ink-500">
               {index + 1} / {total}
             </span>
           </div>
-          <h3 className="mt-1 text-sm font-bold text-slate-900">{question.title}</h3>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">
+          <h3 className="mt-1 text-sm font-bold text-ink-900">{question.title}</h3>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-ink-700">
             {question.description}
           </p>
         </div>
@@ -127,7 +127,7 @@ function asList(value: string | string[] | null | undefined): string[] {
 function Feedback({ result, error }: { result: AnswerResponse | undefined; error: unknown }) {
   if (error) {
     return (
-      <div role="alert" className="mt-3 rounded-lg bg-rose-50 p-3 text-sm text-rose-800">
+      <div role="alert" className="mt-3 rounded-lg bg-rose-50 dark:bg-rose-500/10 p-3 text-sm text-rose-800 dark:text-rose-200">
         {getErrorMessage(error)}
       </div>
     );
@@ -140,8 +140,8 @@ function Feedback({ result, error }: { result: AnswerResponse | undefined; error
       className={clsx(
         "mt-3 rounded-lg p-3 text-sm motion-safe:animate-pop",
         correct
-          ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200"
-          : "bg-rose-50 text-rose-800 ring-1 ring-rose-200",
+          ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-200 dark:ring-emerald-500/30"
+          : "bg-rose-50 dark:bg-rose-500/10 text-rose-800 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-500/30",
       )}
     >
       <div className="font-semibold">
@@ -152,11 +152,11 @@ function Feedback({ result, error }: { result: AnswerResponse | undefined; error
             : "不正解 — 正解と解説を確認しよう"}
       </div>
       {!correct && result.correct_answer != null && (
-        <div className="mt-1 text-slate-700">
+        <div className="mt-1 text-ink-700">
           正解: <code className="font-mono">{asList(result.correct_answer).join(" / ")}</code>
         </div>
       )}
-      {result.explanation && <div className="mt-1 text-slate-700">{result.explanation}</div>}
+      {result.explanation && <div className="mt-1 text-ink-700">{result.explanation}</div>}
     </div>
   );
 }
@@ -175,7 +175,7 @@ function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="rounded-full bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+      className="rounded-full bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-line-strong"
     >
       {label}
     </button>
@@ -187,7 +187,7 @@ function GhostButton({ onClick, label }: { onClick: () => void; label: string })
     <button
       type="button"
       onClick={onClick}
-      className="rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50"
+      className="rounded-full bg-surface px-4 py-1.5 text-xs font-semibold text-ink-600 ring-1 ring-line transition hover:bg-surface-hover"
     >
       {label}
     </button>
@@ -262,10 +262,10 @@ function ChoiceBody({ question, onAdvance }: { question: Question; onAdvance: ()
               key={label}
               className={clsx(
                 "flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm transition",
-                "border-slate-200 hover:bg-slate-50",
-                checked && !result && "border-brand-400 bg-brand-50",
-                isCorrect && "border-emerald-400 bg-emerald-50",
-                isWrong && "border-rose-400 bg-rose-50",
+                "border-line hover:bg-surface-hover",
+                checked && !result && "border-brand-400 bg-brand-50 dark:bg-brand-500/10",
+                isCorrect && "border-emerald-400 bg-emerald-50 dark:bg-emerald-500/10",
+                isWrong && "border-rose-400 bg-rose-50 dark:bg-rose-500/10",
               )}
             >
               <input
@@ -331,10 +331,10 @@ function MultipleChoiceBody({
               key={label}
               className={clsx(
                 "flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm transition",
-                "border-slate-200 hover:bg-slate-50",
-                checked && !result && "border-brand-400 bg-brand-50",
-                showCorrect && "border-emerald-400 bg-emerald-50",
-                showWrong && "border-rose-400 bg-rose-50",
+                "border-line hover:bg-surface-hover",
+                checked && !result && "border-brand-400 bg-brand-50 dark:bg-brand-500/10",
+                showCorrect && "border-emerald-400 bg-emerald-50 dark:bg-emerald-500/10",
+                showWrong && "border-rose-400 bg-rose-50 dark:bg-rose-500/10",
               )}
             >
               <input
@@ -380,7 +380,7 @@ function TextBody({ question, onAdvance }: { question: Question; onAdvance: () =
         maxLength={5000}
         disabled={!!result}
         placeholder="自分の言葉で答えてみましょう"
-        className="w-full rounded-lg border border-slate-200 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="w-full rounded-lg border border-line p-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
       <div className="mt-3 flex gap-2">
         {!result ? (
@@ -394,15 +394,15 @@ function TextBody({ question, onAdvance }: { question: Question; onAdvance: () =
         )}
       </div>
       {result && (
-        <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm ring-1 ring-slate-200 motion-safe:animate-pop">
-          <div className="text-xs font-semibold text-slate-500">
+        <div className="mt-3 rounded-lg bg-surface-subtle p-3 text-sm ring-1 ring-line motion-safe:animate-pop">
+          <div className="text-xs font-semibold text-ink-500">
             解答例 — 自分の答えと比べてみよう
           </div>
-          <p className="mt-1 whitespace-pre-wrap text-slate-800">
+          <p className="mt-1 whitespace-pre-wrap text-ink-800">
             {asList(result.correct_answer).join("\n")}
           </p>
           {result.explanation && (
-            <p className="mt-2 text-xs text-slate-600">{result.explanation}</p>
+            <p className="mt-2 text-xs text-ink-600">{result.explanation}</p>
           )}
         </div>
       )}
@@ -421,7 +421,7 @@ function CodeBody({ question, onAdvance }: { question: Question; onAdvance: () =
 
   return (
     <div>
-      <pre className="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs leading-relaxed text-slate-100">
+      <pre className="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs leading-relaxed text-slate-100 dark:bg-slate-950 dark:ring-1 dark:ring-line-strong">
         <code className="font-mono">{question.codeTemplate}</code>
       </pre>
       <div className="mt-3 space-y-2">
@@ -429,7 +429,7 @@ function CodeBody({ question, onAdvance }: { question: Question; onAdvance: () =
           const blankOk = result?.blank_results[i];
           return (
             <div key={i} className="flex items-center gap-2 text-sm">
-              <label className="w-16 text-xs text-slate-500" htmlFor={`${question.id}-blank-${i}`}>
+              <label className="w-16 text-xs text-ink-500" htmlFor={`${question.id}-blank-${i}`}>
                 穴 {i + 1}
               </label>
               <input
@@ -448,13 +448,13 @@ function CodeBody({ question, onAdvance }: { question: Question; onAdvance: () =
                 placeholder="答えを入力"
                 className={clsx(
                   "flex-1 rounded-md border px-2 py-1 font-mono focus:outline-none focus:ring-2 focus:ring-brand-500",
-                  blankOk === undefined && "border-slate-200",
-                  blankOk === true && "border-emerald-400 bg-emerald-50",
-                  blankOk === false && "border-rose-400 bg-rose-50",
+                  blankOk === undefined && "border-line",
+                  blankOk === true && "border-emerald-400 bg-emerald-50 dark:bg-emerald-500/10",
+                  blankOk === false && "border-rose-400 bg-rose-50 dark:bg-rose-500/10",
                 )}
               />
               {blankOk === false && expected[i] !== undefined && (
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-ink-500">
                   正解: <code className="font-mono">{expected[i]}</code>
                 </span>
               )}

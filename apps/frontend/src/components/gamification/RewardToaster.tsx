@@ -16,7 +16,7 @@ export function RewardToaster() {
           key={id}
           type="button"
           onClick={() => dismiss(id)}
-          className="pointer-events-auto rounded-2xl bg-white p-4 text-left shadow-xl ring-1 ring-slate-200 motion-safe:animate-pop"
+          className="pointer-events-auto rounded-2xl bg-surface p-4 text-left shadow-xl ring-1 ring-line motion-safe:animate-pop"
         >
           {reward.leveled_up && (
             <div className="mb-2 flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-pink-500 px-3 py-2 text-white">
@@ -26,21 +26,21 @@ export function RewardToaster() {
           )}
           <div className="flex items-center gap-3 text-sm font-semibold">
             {reward.xp_gained > 0 && (
-              <span className="text-violet-600">+{reward.xp_gained} XP</span>
+              <span className="text-violet-600 dark:text-violet-400">+{reward.xp_gained} XP</span>
             )}
             {reward.coins_gained > 0 && (
-              <span className="text-amber-600">
+              <span className="text-amber-600 dark:text-amber-400">
                 <span aria-hidden>🪙</span> +{reward.coins_gained}
               </span>
             )}
           </div>
           {reward.new_badges.map((b) => (
-            <div key={b.id} className="mt-1 text-xs font-semibold text-violet-700">
+            <div key={b.id} className="mt-1 text-xs font-semibold text-violet-700 dark:text-violet-300">
               <span aria-hidden>{b.icon}</span> バッジ獲得: {b.title}
             </div>
           ))}
           {reward.completed_quests.map((q) => (
-            <div key={q.id} className="mt-1 text-xs text-emerald-700">
+            <div key={q.id} className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">
               <span aria-hidden>✅</span> クエスト達成: {q.title}
             </div>
           ))}

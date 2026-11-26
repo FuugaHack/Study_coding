@@ -11,13 +11,30 @@ import { layoutStageMap, splitTitle, type MapNode } from "@/lib/stageMap";
 const RADIUS = 36;
 const RING = 2 * Math.PI * (RADIUS + 6);
 
+/** SVG の塗り・線の色。ダークモードで切り替わるよう Tailwind の fill / stroke クラスで返す */
 function nodeColors(node: MapNode) {
   const c = node.course;
-  if (c.isLocked) return { fill: "#e2e8f0", ring: "#cbd5e1", text: "#64748b" };
-  if (c.status === "completed") return { fill: "#10b981", ring: "#059669", text: "#065f46" };
-  if (c.isCleared) return { fill: "#34d399", ring: "#10b981", text: "#065f46" };
-  if (c.status === "in-progress") return { fill: "#6366f1", ring: "#4f46e5", text: "#312e81" };
-  return { fill: "#ffffff", ring: "#6366f1", text: "#1e293b" };
+  if (c.isLocked)
+    return { fill: "fill-surface-strong", ring: "stroke-line-strong", text: "fill-ink-500" };
+  if (c.status === "completed")
+    return {
+      fill: "fill-emerald-500",
+      ring: "stroke-emerald-600",
+      text: "fill-emerald-800 dark:fill-emerald-300",
+    };
+  if (c.isCleared)
+    return {
+      fill: "fill-emerald-400",
+      ring: "stroke-emerald-500",
+      text: "fill-emerald-800 dark:fill-emerald-300",
+    };
+  if (c.status === "in-progress")
+    return {
+      fill: "fill-indigo-500",
+      ring: "stroke-indigo-600",
+      text: "fill-indigo-900 dark:fill-indigo-300",
+    };
+  return { fill: "fill-surface", ring: "stroke-indigo-500", text: "fill-ink-800" };
 }
 
 function statusText(node: MapNode): string {
@@ -49,8 +66,8 @@ export function StageMapPage() {
     <div className="space-y-4">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">ステージマップ</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <h1 className="text-2xl font-bold tracking-tight text-ink-900">ステージマップ</h1>
+          <p className="mt-1 text-sm text-ink-600">
             コースをクリア (70% 正解) すると、道の先のステージが解放されます。経験者は「実力テスト」で飛び級できます。
           </p>
         </div>
@@ -63,7 +80,7 @@ export function StageMapPage() {
 
       <Legend />
 
-      <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-gradient-to-b from-sky-50 via-white to-emerald-50 p-2 shadow-sm">
+      <div className="overflow-x-auto rounded-3xl border border-line bg-gradient-to-b from-sky-50 dark:from-sky-500/10 via-surface to-emerald-50 dark:to-emerald-500/10 p-2 shadow-sm">
         <svg
           viewBox={`0 0 ${layout.width} ${layout.height}`}
           className="min-w-[900px]"
@@ -78,7 +95,7 @@ export function StageMapPage() {
                 key={`${from.course.id}-${to.course.id}`}
                 d={`M${from.x},${from.y + RADIUS} C${from.x},${midY} ${to.x},${midY} ${to.x},${to.y - RADIUS}`}
                 fill="none"
-                stroke={done ? "#10b981" : "#cbd5e1"}
+                className={done ? "stroke-emerald-500" : "stroke-line-strong"}
                 strokeWidth={done ? 5 : 4}
                 strokeDasharray={done ? undefined : "8 8"}
                 strokeLinecap="round"
@@ -108,19 +125,19 @@ export function StageMapPage() {
               >
                 <title>{label}</title>
                 {/* 進捗リング */}
-                <circle r={RADIUS + 6} fill="none" stroke="#e2e8f0" strokeWidth={5} />
+                <circle r={RADIUS + 6} fill="none" className="stroke-surface-strong" strokeWidth={5} />
                 {!c.isLocked && c.progress > 0 && (
                   <circle
                     r={RADIUS + 6}
                     fill="none"
-                    stroke={colors.ring}
+                    className={colors.ring}
                     strokeWidth={5}
                     strokeDasharray={`${(c.progress / 100) * RING} ${RING}`}
                     transform="rotate(-90)"
                     strokeLinecap="round"
                   />
                 )}
-                <circle r={RADIUS} fill={colors.fill} stroke={colors.ring} strokeWidth={3} />
+                <circle r={RADIUS} className={`${colors.fill} ${colors.ring}`} strokeWidth={3} />
                 <text
                   textAnchor="middle"
                   dominantBaseline="central"
@@ -151,7 +168,7 @@ export function StageMapPage() {
                     textAnchor="middle"
                     fontSize={14}
                     fontWeight={600}
-                    fill={colors.text}
+                    className={colors.text}
                   >
                     {line}
                   </text>
@@ -167,13 +184,13 @@ export function StageMapPage() {
 
 function Legend() {
   const items = [
-    { color: "bg-white ring-2 ring-indigo-500", label: "挑戦できる" },
+    { color: "bg-surface ring-2 ring-indigo-500", label: "挑戦できる" },
     { color: "bg-indigo-500", label: "学習中" },
     { color: "bg-emerald-400", label: "クリア (次が解放)" },
-    { color: "bg-slate-200", label: "ロック中" },
+    { color: "bg-surface-strong", label: "ロック中" },
   ];
   return (
-    <ul className="flex flex-wrap gap-4 text-xs text-slate-600">
+    <ul className="flex flex-wrap gap-4 text-xs text-ink-600">
       {items.map((i) => (
         <li key={i.label} className="flex items-center gap-1.5">
           <span className={`inline-block h-3 w-3 rounded-full ${i.color}`} aria-hidden />

@@ -4,6 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import "./index.css";
+// OS 設定の変更を監視し、保存済みのテーマを適用する
+import "./stores/theme";
 
 const queryClient = new QueryClient({
   defaultOptions: {

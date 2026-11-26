@@ -33,7 +33,7 @@ export function LoginPage() {
     <div className="min-h-full flex items-center justify-center px-4 py-12">
       <form onSubmit={onSubmit} className="card p-8 w-full max-w-md space-y-4">
         <h1 className="text-2xl font-bold text-center">ログイン</h1>
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+        {error && <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>}
         <div>
           <label className="label" htmlFor="email">メールアドレス</label>
           <input
@@ -62,10 +62,10 @@ export function LoginPage() {
           {submitting ? "ログイン中..." : "ログイン"}
         </button>
 
-        <div className="flex items-center gap-3 text-xs text-slate-400">
-          <div className="flex-1 h-px bg-slate-200" />
+        <div className="flex items-center gap-3 text-xs text-ink-400">
+          <div className="flex-1 h-px bg-surface-strong" />
           または
-          <div className="flex-1 h-px bg-slate-200" />
+          <div className="flex-1 h-px bg-surface-strong" />
         </div>
 
         <button
@@ -88,13 +88,13 @@ export function LoginPage() {
         >
           ゲストとして使用（試用）
         </button>
-        <p className="text-xs text-center text-slate-500 -mt-2">
+        <p className="text-xs text-center text-ink-500 -mt-2">
           登録不要で全機能を試せます。学習データは一時的に保存されます。
         </p>
 
-        <p className="text-sm text-center text-slate-600">
+        <p className="text-sm text-center text-ink-600">
           アカウントがない方は{" "}
-          <Link to="/register" className="text-brand-600 hover:underline">
+          <Link to="/register" className="text-brand-600 dark:text-brand-400 hover:underline">
             新規登録
           </Link>
         </p>

@@ -59,13 +59,13 @@ export function Mascot({ mood = "happy", size = 72, className, message }: Props)
         <Eyes mood={mood} />
         <Mouth mood={mood} />
         {mood === "sleepy" && (
-          <text x="74" y="30" fontSize="14" fill="#64748b" fontWeight="bold">
+          <text x="74" y="30" fontSize="14" className="fill-ink-500" fontWeight="bold">
             z
           </text>
         )}
       </svg>
       {message && (
-        <div className="relative mb-3 rounded-2xl bg-white px-3 py-2 text-sm text-slate-700 shadow-sm ring-1 ring-slate-200">
+        <div className="relative mb-3 rounded-2xl bg-surface px-3 py-2 text-sm text-ink-700 shadow-sm ring-1 ring-line">
           {message}
         </div>
       )}

@@ -114,7 +114,7 @@ export function PracticePage() {
       {taskId && (
         <div className="mt-6 card p-6">
           {taskStatus?.status === "pending" || taskStatus?.status === "processing" ? (
-            <div className="flex items-center text-slate-600 text-sm">
+            <div className="flex items-center text-ink-600 text-sm">
               <div className="h-4 w-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mr-2" />
               問題を生成中...
             </div>
@@ -126,7 +126,7 @@ export function PracticePage() {
             <div className="space-y-4">
               {problem.title && <h2 className="text-xl font-semibold">{problem.title}</h2>}
               {problem.description && (
-                <div className="whitespace-pre-wrap text-sm text-slate-700">
+                <div className="whitespace-pre-wrap text-sm text-ink-700">
                   {problem.description}
                 </div>
               )}
@@ -163,7 +163,7 @@ export function PracticePage() {
               {problemType === "quiz" && problem.choices && (
                 <ul className="space-y-2">
                   {problem.choices.map((c, i) => (
-                    <li key={i} className="p-3 border border-slate-200 rounded-md">
+                    <li key={i} className="p-3 border border-line rounded-md">
                       {i + 1}. {c}
                     </li>
                   ))}

@@ -35,7 +35,7 @@ export function CatalogCoursePage() {
       <div className="space-y-4">
         <EmptyState message="このコースは見つかりませんでした。" />
         <div className="text-center">
-          <Link to="/courses" className="text-sm text-brand-600 hover:underline">
+          <Link to="/courses" className="text-sm text-brand-600 dark:text-brand-400 hover:underline">
             ← コース一覧に戻る
           </Link>
         </div>
@@ -56,7 +56,7 @@ export function CatalogCoursePage() {
     <div className="catalog-bg -mx-4 -my-6 min-h-[calc(100vh-3.5rem)] px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="motion-safe:animate-fade-up">
-          <Link to="/courses" className="text-sm text-slate-500 hover:text-brand-600">
+          <Link to="/courses" className="text-sm text-ink-500 hover:text-brand-600 dark:hover:text-brand-400">
             ← コース一覧
           </Link>
         </div>
@@ -110,11 +110,11 @@ export function CatalogCoursePage() {
         <ChallengeActions course={data} />
 
         {data.isLocked && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <div className="rounded-2xl border border-line bg-surface p-6 text-center shadow-sm">
             <div className="text-4xl" aria-hidden>
               🔒
             </div>
-            <p className="mt-2 text-sm text-slate-700">
+            <p className="mt-2 text-sm text-ink-700">
               「{data.prerequisiteTitles.join("」「")}」の 70% に正解すると解放されます。
               {data.canTakePlacement && " 経験者は上の実力テストで飛び級もできます。"}
             </p>
@@ -127,8 +127,8 @@ export function CatalogCoursePage() {
             style={{ animationDelay: "150ms" }}
           >
             <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">問題</h2>
-              <span className="text-xs text-slate-500">
+              <h2 className="text-lg font-semibold text-ink-900">問題</h2>
+              <span className="text-xs text-ink-500">
                 {done ? `${total} / ${total} 完了` : `進行中: ${currentIndex + 1} / ${total}`}
               </span>
             </div>
@@ -138,7 +138,7 @@ export function CatalogCoursePage() {
               aria-valuenow={done ? 100 : progressPct}
               aria-valuemin={0}
               aria-valuemax={100}
-              className="mb-4 h-2 overflow-hidden rounded-full bg-slate-200"
+              className="mb-4 h-2 overflow-hidden rounded-full bg-surface-strong"
             >
               <div
                 className={clsx(
@@ -184,10 +184,10 @@ function CompletionPanel({
   onRestart: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-6 text-center shadow-sm motion-safe:animate-pop">
+    <div className="rounded-2xl border border-emerald-200 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 dark:from-emerald-500/10 to-teal-50 dark:to-teal-500/10 p-6 text-center shadow-sm motion-safe:animate-pop">
       <div className="text-5xl">🎉</div>
-      <h3 className="mt-2 text-xl font-bold text-emerald-800">コース完走!</h3>
-      <p className="mt-1 text-sm text-emerald-700">
+      <h3 className="mt-2 text-xl font-bold text-emerald-800 dark:text-emerald-200">コース完走!</h3>
+      <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">
         「{courseTitle}」の全 {total} 問を終えました。お疲れさまでした。
       </p>
       <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -200,7 +200,7 @@ function CompletionPanel({
         </button>
         <Link
           to="/courses"
-          className="rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+          className="rounded-full bg-surface px-4 py-1.5 text-xs font-semibold text-ink-700 ring-1 ring-line transition hover:bg-surface-hover"
         >
           コース一覧に戻る
         </Link>
