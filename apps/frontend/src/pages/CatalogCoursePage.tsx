@@ -94,15 +94,17 @@ export function CatalogCoursePage() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
-              <CategoryBadge category={data.category} />
-              <LevelBadge level={data.level} />
-              <StatusBadge status={data.status} />
+              <CategoryBadge category={data.category} onAccent />
+              <LevelBadge level={data.level} onAccent />
+              <StatusBadge status={data.status} onAccent />
             </div>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-1.5">
             {data.tags.map((t) => (
-              <TagPill key={t}>{t}</TagPill>
+              <TagPill key={t} onAccent>
+                {t}
+              </TagPill>
             ))}
           </div>
         </header>
