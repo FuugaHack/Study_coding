@@ -15,11 +15,11 @@ export function AiReviewPanel({ taskId }: { taskId: string }) {
   });
 
   if (error) {
-    return <div className="text-sm text-red-600">AIレビュー取得に失敗しました</div>;
+    return <div className="text-sm text-red-600 dark:text-red-400">AIレビュー取得に失敗しました</div>;
   }
   if (!data || data.status === "pending" || data.status === "processing") {
     return (
-      <div className="flex items-center text-sm text-slate-600">
+      <div className="flex items-center text-sm text-ink-600">
         <div className="h-4 w-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mr-2" />
         AIレビュー生成中...
       </div>
@@ -27,7 +27,7 @@ export function AiReviewPanel({ taskId }: { taskId: string }) {
   }
   if (data.status === "failed") {
     return (
-      <div className="text-sm text-red-600">
+      <div className="text-sm text-red-600 dark:text-red-400">
         AIレビュー生成に失敗しました: {data.error_message ?? "不明なエラー"}
       </div>
     );

@@ -36,14 +36,14 @@ export function AttemptDetailPage() {
         <div className="flex items-center gap-3">
           <span
             className={`badge ${
-              data.is_correct ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+              data.is_correct ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-300"
             }`}
           >
             {data.is_correct ? "正解" : "不正解"}
           </span>
           <span className="text-lg font-semibold">スコア: {data.score}</span>
           {data.time_spent_seconds != null && (
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-ink-500">
               所要時間: {data.time_spent_seconds}秒
             </span>
           )}
@@ -52,7 +52,7 @@ export function AttemptDetailPage() {
         {data.submitted_code && (
           <div>
             <h3 className="font-semibold mb-2">提出コード</h3>
-            <pre className="bg-slate-900 text-slate-100 text-sm p-4 rounded overflow-auto">
+            <pre className="bg-slate-900 text-slate-100 text-sm p-4 rounded overflow-auto dark:bg-slate-950 dark:ring-1 dark:ring-line-strong">
               <code>{data.submitted_code}</code>
             </pre>
           </div>
@@ -61,7 +61,7 @@ export function AttemptDetailPage() {
         {data.answer && (
           <div>
             <h3 className="font-semibold mb-2">回答</h3>
-            <pre className="bg-slate-50 text-sm p-4 rounded overflow-auto">
+            <pre className="bg-surface-subtle text-sm p-4 rounded overflow-auto">
               {JSON.stringify(data.answer, null, 2)}
             </pre>
           </div>

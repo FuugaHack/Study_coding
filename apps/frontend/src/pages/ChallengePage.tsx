@@ -34,7 +34,7 @@ export function ChallengePage() {
     return (
       <div className="mx-auto max-w-xl space-y-4 text-center">
         <Mascot mood="think" className="justify-center" message="このチャレンジは提出済みだよ" />
-        <Link to={`/catalog/courses/${data.course_id}`} className="text-sm text-brand-600 hover:underline">
+        <Link to={`/catalog/courses/${data.course_id}`} className="text-sm text-brand-600 dark:text-brand-400 hover:underline">
           コースに戻る
         </Link>
       </div>
@@ -117,12 +117,12 @@ function ChallengeRunner({
 
       <ol className="space-y-4">
         {challenge.questions.map((q, i) => (
-          <li key={q.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="text-xs text-slate-500">
+          <li key={q.id} className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
+            <div className="text-xs text-ink-500">
               Q{i + 1} / {challenge.questions.length}
             </div>
-            <h2 className="mt-1 text-sm font-bold text-slate-900">{q.title}</h2>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{q.description}</p>
+            <h2 className="mt-1 text-sm font-bold text-ink-900">{q.title}</h2>
+            <p className="mt-1 whitespace-pre-wrap text-sm text-ink-700">{q.description}</p>
             <div className="mt-3">
               <AnswerInput
                 question={q}
@@ -135,7 +135,7 @@ function ChallengeRunner({
       </ol>
 
       {submit.error && (
-        <div role="alert" className="rounded-lg bg-rose-50 p-3 text-sm text-rose-800">
+        <div role="alert" className="rounded-lg bg-rose-50 dark:bg-rose-500/10 p-3 text-sm text-rose-800 dark:text-rose-200">
           {getErrorMessage(submit.error)}
         </div>
       )}
@@ -145,7 +145,7 @@ function ChallengeRunner({
           onClick={() => submit.mutate()}
           disabled={submit.isPending}
           className={clsx(
-            "rounded-full px-6 py-2 text-sm font-bold text-white shadow transition disabled:bg-slate-300",
+            "rounded-full px-6 py-2 text-sm font-bold text-white shadow transition disabled:bg-line-strong",
             isBoss ? "bg-rose-500 hover:bg-rose-600" : "bg-indigo-500 hover:bg-indigo-600",
           )}
         >
@@ -178,24 +178,24 @@ function ChallengeResult({
         className={clsx(
           "rounded-3xl p-6 text-center shadow-sm motion-safe:animate-pop",
           result.passed
-            ? "bg-gradient-to-br from-emerald-50 to-teal-50 ring-1 ring-emerald-200"
-            : "bg-gradient-to-br from-slate-50 to-rose-50 ring-1 ring-rose-200",
+            ? "bg-gradient-to-br from-emerald-50 dark:from-emerald-500/10 to-teal-50 dark:to-teal-500/10 ring-1 ring-emerald-200 dark:ring-emerald-500/30"
+            : "bg-gradient-to-br from-surface-subtle to-rose-50 dark:to-rose-500/10 ring-1 ring-rose-200 dark:ring-rose-500/30",
         )}
       >
         <Mascot mood={result.passed ? "cheer" : "sad"} size={96} className="justify-center" />
-        <h1 className="mt-2 text-2xl font-black text-slate-900">{headline}</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="mt-2 text-2xl font-black text-ink-900">{headline}</h1>
+        <p className="mt-1 text-sm text-ink-600">
           {challenge.course_title} の{label}: {result.correct} / {result.total} 問正解 ({result.percent}%)
         </p>
         {result.unlocked_courses.length > 0 && (
-          <p className="mt-3 text-sm font-semibold text-emerald-700">
+          <p className="mt-3 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
             🔓 新しく解放: {result.unlocked_courses.join("、")}
           </p>
         )}
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           <Link
             to={`/catalog/courses/${result.course_id}`}
-            className="rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+            className="rounded-full bg-surface px-4 py-1.5 text-sm font-semibold text-ink-700 ring-1 ring-line hover:bg-surface-hover"
           >
             コースに戻る
           </Link>
@@ -209,9 +209,9 @@ function ChallengeResult({
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-slate-900">答え合わせ</h2>
+        <h2 className="mb-3 text-lg font-semibold text-ink-900">答え合わせ</h2>
         {!result.passed && (
-          <p className="mb-3 text-sm text-slate-600">
+          <p className="mb-3 text-sm text-ink-600">
             不合格のときは正誤だけを表示します。間違えた問題はコースで練習して、また挑戦しよう!
           </p>
         )}
@@ -229,25 +229,25 @@ function ChallengeResult({
                 key={r.question_id}
                 className={clsx(
                   "rounded-xl border p-4 text-sm",
-                  r.correct ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50",
+                  r.correct ? "border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10" : "border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10",
                 )}
               >
-                <div className="font-semibold text-slate-900">
+                <div className="font-semibold text-ink-900">
                   {r.correct ? "⭕" : "❌"} Q{i + 1}. {q?.title}
                 </div>
                 {answer != null ? (
-                  <div className="mt-1 text-slate-700">
+                  <div className="mt-1 text-ink-700">
                     正解: <code className="font-mono">{answer}</code>
                   </div>
                 ) : (
                   !r.correct &&
                   wrongBlanks.length > 0 && (
-                    <div className="mt-1 text-slate-600">
+                    <div className="mt-1 text-ink-600">
                       穴 {wrongBlanks.join("・")} が違います
                     </div>
                   )
                 )}
-                {r.explanation && <div className="mt-1 text-slate-600">{r.explanation}</div>}
+                {r.explanation && <div className="mt-1 text-ink-600">{r.explanation}</div>}
               </li>
             );
           })}
@@ -284,7 +284,7 @@ function AnswerInput({
             key={label}
             className={clsx(
               "flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm",
-              value?.selected === label ? "border-brand-400 bg-brand-50" : "border-slate-200 hover:bg-slate-50",
+              value?.selected === label ? "border-brand-400 bg-brand-50 dark:bg-brand-500/10" : "border-line hover:bg-surface-hover",
             )}
           >
             <input
@@ -309,7 +309,7 @@ function AnswerInput({
             key={label}
             className={clsx(
               "flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm",
-              selected.has(label) ? "border-brand-400 bg-brand-50" : "border-slate-200 hover:bg-slate-50",
+              selected.has(label) ? "border-brand-400 bg-brand-50 dark:bg-brand-500/10" : "border-line hover:bg-surface-hover",
             )}
           >
             <input
@@ -334,13 +334,13 @@ function AnswerInput({
   const blanks = value?.blanks ?? Array<string>(count).fill("");
   return (
     <div>
-      <pre className="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs leading-relaxed text-slate-100">
+      <pre className="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs leading-relaxed text-slate-100 dark:bg-slate-950 dark:ring-1 dark:ring-line-strong">
         <code className="font-mono">{question.code_template}</code>
       </pre>
       <div className="mt-2 space-y-2">
         {blanks.map((b, i) => (
           <div key={i} className="flex items-center gap-2 text-sm">
-            <label className="w-16 text-xs text-slate-500" htmlFor={`${question.id}-c-${i}`}>
+            <label className="w-16 text-xs text-ink-500" htmlFor={`${question.id}-c-${i}`}>
               穴 {i + 1}
             </label>
             <input
@@ -352,7 +352,7 @@ function AnswerInput({
                 next[i] = e.target.value;
                 onChange({ blanks: next });
               }}
-              className="flex-1 rounded-md border border-slate-200 px-2 py-1 font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="flex-1 rounded-md border border-line px-2 py-1 font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         ))}

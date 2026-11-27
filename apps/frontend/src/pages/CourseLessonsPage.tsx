@@ -14,9 +14,9 @@ const DIFFICULTY_LABEL: Record<string, string> = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  completed: "bg-emerald-100 text-emerald-700",
-  in_progress: "bg-amber-100 text-amber-700",
-  not_started: "bg-slate-100 text-slate-500",
+  completed: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  in_progress: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  not_started: "bg-surface-muted text-ink-500",
 };
 
 const UUID_RE =
@@ -54,24 +54,24 @@ export function CourseLessonsPage() {
                 to={`/lessons/${l.id}`}
                 className="card p-4 flex items-center gap-4 hover:border-brand-500 hover:shadow"
               >
-                <span className="w-8 h-8 rounded-full bg-brand-50 text-brand-700 text-sm flex items-center justify-center font-semibold">
+                <span className="w-8 h-8 rounded-full bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300 text-sm flex items-center justify-center font-semibold">
                   {l.sort_order}
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium">{l.title}</div>
                   {l.description && (
-                    <div className="text-sm text-slate-500 truncate">{l.description}</div>
+                    <div className="text-sm text-ink-500 truncate">{l.description}</div>
                   )}
                   <div className="flex gap-1 flex-wrap mt-1">
                     {l.tags.map((t) => (
-                      <span key={t} className="badge bg-slate-100 text-slate-600">
+                      <span key={t} className="badge bg-surface-muted text-ink-600">
                         {t}
                       </span>
                     ))}
                   </div>
                 </div>
-                <span className="badge bg-slate-100 text-slate-600">{l.lesson_type}</span>
-                <span className="badge bg-slate-100 text-slate-600">
+                <span className="badge bg-surface-muted text-ink-600">{l.lesson_type}</span>
+                <span className="badge bg-surface-muted text-ink-600">
                   {DIFFICULTY_LABEL[l.difficulty] ?? l.difficulty}
                 </span>
                 <span className={clsx("badge", STATUS_STYLE[status] ?? STATUS_STYLE.not_started)}>

@@ -32,7 +32,7 @@ export function RegisterPage() {
     <div className="min-h-full flex items-center justify-center px-4 py-12">
       <form onSubmit={onSubmit} className="card p-8 w-full max-w-md space-y-4">
         <h1 className="text-2xl font-bold text-center">新規登録</h1>
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+        {error && <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>}
         <div>
           <label className="label" htmlFor="email">メールアドレス</label>
           <input
@@ -74,9 +74,9 @@ export function RegisterPage() {
         <button type="submit" className="btn-primary w-full" disabled={submitting}>
           {submitting ? "登録中..." : "登録"}
         </button>
-        <p className="text-sm text-center text-slate-600">
+        <p className="text-sm text-center text-ink-600">
           既にアカウントをお持ちの方は{" "}
-          <Link to="/login" className="text-brand-600 hover:underline">
+          <Link to="/login" className="text-brand-600 dark:text-brand-400 hover:underline">
             ログイン
           </Link>
         </p>

@@ -23,7 +23,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   if (!token) {
     if (DEV_AUTO_GUEST && !autoLoginFailed) {
       return (
-        <div className="min-h-full flex items-center justify-center p-8 text-slate-500">
+        <div className="min-h-full flex items-center justify-center p-8 text-ink-500">
           ゲストとして接続中...
         </div>
       );

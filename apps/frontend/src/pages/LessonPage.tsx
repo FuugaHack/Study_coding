@@ -68,13 +68,13 @@ export function LessonPage() {
 
       {data.lesson_type === "quiz" && (
         <div className="card p-6 space-y-4">
-          <div className="text-slate-800 whitespace-pre-wrap">
+          <div className="text-ink-800 whitespace-pre-wrap">
             {(data.content as QuizContent)?.question}
           </div>
           <ul className="space-y-2">
             {(data.content as QuizContent)?.choices?.map((c, i) => (
               <li key={i}>
-                <label className="flex items-center gap-3 p-3 border border-slate-200 rounded-md cursor-pointer hover:bg-slate-50">
+                <label className="flex items-center gap-3 p-3 border border-line rounded-md cursor-pointer hover:bg-surface-hover">
                   <input
                     type="radio"
                     name="choice"
@@ -100,7 +100,7 @@ export function LessonPage() {
         <div className="space-y-4">
           <div className="card p-6">
             <h3 className="font-semibold mb-2">課題</h3>
-            <div className="whitespace-pre-wrap text-sm text-slate-700">
+            <div className="whitespace-pre-wrap text-sm text-ink-700">
               {(data.content as CodingContent)?.problem_description}
             </div>
           </div>
@@ -122,7 +122,7 @@ export function LessonPage() {
 
       {data.lesson_type === "reading" && (
         <div className="card p-6 space-y-4">
-          <div className="text-sm text-slate-600 whitespace-pre-wrap">
+          <div className="text-sm text-ink-600 whitespace-pre-wrap">
             {(data.content as { body?: string })?.body ?? "読み物コンテンツ"}
           </div>
           <button
@@ -143,8 +143,8 @@ export function LessonPage() {
             <span
               className={`badge ${
                 result.is_correct
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-amber-100 text-amber-700"
+                  ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                  : "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300"
               }`}
             >
               {result.is_correct ? "正解" : "不正解"}

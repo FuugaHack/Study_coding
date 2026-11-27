@@ -51,10 +51,10 @@ export function DashboardPage() {
     <div className="catalog-bg -mx-4 -my-6 min-h-[calc(100vh-3.5rem)] px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-6xl space-y-8">
         <header className="motion-safe:animate-fade-up">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
             おかえりなさい 👋
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-ink-600">
             今日も少しずつ前に進みましょう。
           </p>
         </header>
@@ -69,7 +69,7 @@ export function DashboardPage() {
             value={`${inProgressCourses.length}`}
             hint="コース"
             icon="🚀"
-            accent="from-blue-50 to-indigo-50 text-indigo-700 border-indigo-100"
+            accent="from-blue-50 dark:from-blue-500/10 to-indigo-50 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-100 dark:border-indigo-500/30"
             delay={120}
           />
           <StatCard
@@ -77,7 +77,7 @@ export function DashboardPage() {
             value={`${completedCourses.length}`}
             hint="コース"
             icon="🏆"
-            accent="from-emerald-50 to-teal-50 text-emerald-700 border-emerald-100"
+            accent="from-emerald-50 dark:from-emerald-500/10 to-teal-50 dark:to-teal-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-500/30"
             delay={190}
           />
           <StatCard
@@ -85,7 +85,7 @@ export function DashboardPage() {
             value={`${totalQuestions}`}
             hint="問"
             icon="❓"
-            accent="from-amber-50 to-orange-50 text-amber-800 border-amber-100"
+            accent="from-amber-50 dark:from-amber-500/10 to-orange-50 dark:to-orange-500/10 text-amber-800 dark:text-amber-200 border-amber-100 dark:border-amber-500/30"
             delay={260}
           />
           <StatCard
@@ -93,7 +93,7 @@ export function DashboardPage() {
             value={`${allCourses.length}`}
             hint="コース"
             icon="📚"
-            accent="from-pink-50 to-rose-50 text-rose-700 border-rose-100"
+            accent="from-pink-50 dark:from-pink-500/10 to-rose-50 dark:to-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-100 dark:border-rose-500/30"
             delay={330}
           />
         </section>
@@ -101,8 +101,8 @@ export function DashboardPage() {
         {/* 再度学習 */}
         <section className="motion-safe:animate-fade-up" style={{ animationDelay: "400ms" }}>
           <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">🔁 再度学習</h2>
-            <Link to="/courses" className="text-xs text-brand-600 hover:underline">
+            <h2 className="text-lg font-semibold text-ink-900">🔁 再度学習</h2>
+            <Link to="/courses" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">
               すべてのコース →
             </Link>
           </div>
@@ -116,7 +116,7 @@ export function DashboardPage() {
                 <Link
                   key={c.id}
                   to={`/catalog/courses/${c.id}`}
-                  className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition motion-safe:hover:-translate-y-0.5 hover:shadow-md"
+                  className="group relative overflow-hidden rounded-2xl border border-line bg-surface p-4 shadow-sm transition motion-safe:hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div
                     aria-hidden
@@ -136,7 +136,7 @@ export function DashboardPage() {
                       {c.icon}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-semibold text-slate-900">
+                      <div className="truncate text-sm font-semibold text-ink-900">
                         {c.title}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-1">
@@ -146,13 +146,13 @@ export function DashboardPage() {
                     </div>
                   </div>
                   <div className="mt-3">
-                    <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <div className="flex items-center justify-between text-[11px] text-ink-500">
                       <span>
                         {c.status === "completed" ? "完了済 — もう一度" : "続きから"}
                       </span>
-                      <span className="font-medium text-slate-700">{c.progress}%</span>
+                      <span className="font-medium text-ink-700">{c.progress}%</span>
                     </div>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-muted">
                       <div
                         className={clsx(
                           "h-full bg-gradient-to-r",
@@ -170,7 +170,7 @@ export function DashboardPage() {
 
         {/* おすすめの学習 */}
         <section className="motion-safe:animate-fade-up" style={{ animationDelay: "480ms" }}>
-          <h2 className="mb-3 text-lg font-semibold text-slate-900">✨ おすすめの学習</h2>
+          <h2 className="mb-3 text-lg font-semibold text-ink-900">✨ おすすめの学習</h2>
           {recs.isLoading && <LoadingState />}
           {recs.error && <ErrorState message={getErrorMessage(recs.error)} />}
           {recs.data && recs.data.items.length === 0 && (
@@ -183,19 +183,19 @@ export function DashboardPage() {
                 return (
                   <div
                     key={r.id}
-                    className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                    className="relative overflow-hidden rounded-2xl border border-line bg-surface p-4 shadow-sm"
                   >
                     <div className="mb-1 flex items-center gap-2">
-                      <span className="badge bg-brand-50 text-brand-700">
+                      <span className="badge bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300">
                         {TYPE_LABEL[r.recommendation_type] ?? r.recommendation_type}
                       </span>
-                      <span className="badge bg-slate-100 text-slate-500">
+                      <span className="badge bg-surface-muted text-ink-500">
                         優先度 {Number(r.priority_score).toFixed(1)}
                       </span>
                     </div>
-                    <div className="font-medium text-slate-900">{r.lesson_title ?? "生成問題"}</div>
+                    <div className="font-medium text-ink-900">{r.lesson_title ?? "生成問題"}</div>
                     {r.reason && (
-                      <p className="mt-1 text-sm text-slate-600">{r.reason}</p>
+                      <p className="mt-1 text-sm text-ink-600">{r.reason}</p>
                     )}
                     <div className="mt-3 flex gap-2">
                       <Link
@@ -206,7 +206,7 @@ export function DashboardPage() {
                       </Link>
                       <button
                         type="button"
-                        className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-50"
+                        className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-ink-600 ring-1 ring-line hover:bg-surface-hover disabled:opacity-50"
                         onClick={() => dismiss.mutate(r.id)}
                         disabled={dismiss.isPending}
                       >
@@ -222,31 +222,31 @@ export function DashboardPage() {
 
         {/* 苦手分野 */}
         <section className="motion-safe:animate-fade-up" style={{ animationDelay: "560ms" }}>
-          <h2 className="mb-3 text-lg font-semibold text-slate-900">🎯 苦手分野</h2>
+          <h2 className="mb-3 text-lg font-semibold text-ink-900">🎯 苦手分野</h2>
           {weakness.isLoading && <LoadingState />}
           {weakness.error && <ErrorState message={getErrorMessage(weakness.error)} />}
           {weakness.data && weakness.data.items.length === 0 && (
             <EmptyState message="まだ十分なデータがありません" />
           )}
           {weakness.data && weakness.data.items.length > 0 && (
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white divide-y divide-slate-200">
+            <div className="overflow-hidden rounded-2xl border border-line bg-surface divide-y divide-line">
               {weakness.data.items.map((w) => {
                 const rate = Number(w.accuracy_rate);
                 return (
                   <div key={w.tag} className="flex items-center gap-4 p-4">
-                    <div className="w-28 font-medium text-slate-900">{w.tag}</div>
+                    <div className="w-28 font-medium text-ink-900">{w.tag}</div>
                     <div className="flex-1">
-                      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-2 overflow-hidden rounded-full bg-surface-muted">
                         <div
                           className="h-full bg-gradient-to-r from-amber-400 to-orange-500"
                           style={{ width: `${Math.min(rate * 100, 100)}%` }}
                         />
                       </div>
                     </div>
-                    <div className="w-24 text-right text-sm text-slate-600">
+                    <div className="w-24 text-right text-sm text-ink-600">
                       正答率 {(rate * 100).toFixed(0)}%
                     </div>
-                    <div className="w-32 text-right text-sm text-slate-500">
+                    <div className="w-32 text-right text-sm text-ink-500">
                       {w.correct_count} / {w.total_attempts} 回
                     </div>
                   </div>

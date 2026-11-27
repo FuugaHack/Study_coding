@@ -42,7 +42,7 @@ function ChipGroup<T extends string>({
               "rounded-full px-3 py-1 text-xs font-medium transition motion-safe:hover:-translate-y-0.5",
               selected
                 ? "bg-brand-500 text-white shadow-sm"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50",
+                : "bg-surface text-ink-600 ring-1 ring-line hover:bg-surface-hover",
             )}
           >
             {o.label}
@@ -63,7 +63,7 @@ export function CourseFilters({
 }: Props) {
   return (
     <div
-      className="card-soft bg-white/80 backdrop-blur p-4 space-y-3 motion-safe:animate-fade-up"
+      className="card-soft bg-surface/80 backdrop-blur p-4 space-y-3 motion-safe:animate-fade-up"
       style={{ animationDelay: "100ms" }}
     >
       <div className="relative">
@@ -76,18 +76,18 @@ export function CourseFilters({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="コース名・説明・タグで検索..."
-          className="w-full rounded-full border border-slate-200 bg-white pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full rounded-full border border-line bg-surface pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <span
           aria-hidden
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
         >
           🔍
         </span>
       </div>
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-500 w-16 shrink-0">カテゴリ</span>
+          <span className="text-xs font-semibold text-ink-500 w-16 shrink-0">カテゴリ</span>
           <ChipGroup
             value={category}
             options={CATEGORY_FILTER_OPTIONS}
@@ -96,7 +96,7 @@ export function CourseFilters({
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-500 w-16 shrink-0">レベル</span>
+          <span className="text-xs font-semibold text-ink-500 w-16 shrink-0">レベル</span>
           <ChipGroup
             value={level}
             options={LEVEL_FILTER_OPTIONS}

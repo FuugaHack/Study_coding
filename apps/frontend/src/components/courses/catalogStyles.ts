@@ -11,13 +11,13 @@ export const CATEGORY_LABEL: Record<CourseCategory, string> = {
 };
 
 export const CATEGORY_BADGE_CLASS: Record<CourseCategory, string> = {
-  frontend: "bg-pink-100 text-pink-700 ring-1 ring-pink-200",
-  backend: "bg-indigo-100 text-indigo-700 ring-1 ring-indigo-200",
-  ai: "bg-gradient-to-r from-purple-100 to-cyan-100 text-purple-700 ring-1 ring-purple-200",
-  database: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
-  infra: "bg-sky-100 text-sky-700 ring-1 ring-sky-200",
-  testing: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
-  practice: "bg-rose-100 text-rose-700 ring-1 ring-rose-200",
+  frontend: "bg-pink-100 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300 ring-1 ring-pink-200 dark:ring-pink-500/30",
+  backend: "bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-500/30",
+  ai: "bg-gradient-to-r from-purple-100 dark:from-purple-500/10 to-cyan-100 dark:to-cyan-500/10 text-purple-700 dark:text-purple-300 ring-1 ring-purple-200 dark:ring-purple-500/30",
+  database: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-500/30",
+  infra: "bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 ring-1 ring-sky-200 dark:ring-sky-500/30",
+  testing: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 ring-1 ring-amber-200 dark:ring-amber-500/30",
+  practice: "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 ring-1 ring-rose-200 dark:ring-rose-500/30",
 };
 
 export const CATEGORY_ACCENT_CLASS: Record<CourseCategory, string> = {
@@ -37,9 +37,9 @@ export const LEVEL_LABEL: Record<CourseLevel, string> = {
 };
 
 export const LEVEL_BADGE_CLASS: Record<CourseLevel, string> = {
-  beginner: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-  intermediate: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
-  advanced: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
+  beginner: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-500/30",
+  intermediate: "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 ring-1 ring-amber-200 dark:ring-amber-500/30",
+  advanced: "bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 ring-1 ring-rose-200 dark:ring-rose-500/30",
 };
 
 export const STATUS_LABEL: Record<CourseStatus, string> = {
@@ -50,10 +50,10 @@ export const STATUS_LABEL: Record<CourseStatus, string> = {
 };
 
 export const STATUS_BADGE_CLASS: Record<CourseStatus, string> = {
-  locked: "bg-slate-100 text-slate-500 ring-1 ring-slate-200",
-  "not-started": "bg-slate-50 text-slate-600 ring-1 ring-slate-200",
-  "in-progress": "bg-blue-100 text-blue-700 ring-1 ring-blue-200",
-  completed: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
+  locked: "bg-surface-muted text-ink-500 ring-1 ring-line",
+  "not-started": "bg-surface-subtle text-ink-600 ring-1 ring-line",
+  "in-progress": "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200 dark:ring-blue-500/30",
+  completed: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-500/30",
 };
 
 export const CATEGORY_FILTER_OPTIONS: Array<{ value: CourseCategory | "all"; label: string }> = [
